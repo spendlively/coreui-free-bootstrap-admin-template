@@ -13294,8 +13294,8 @@ canvas {
 }
 
 .switch-sm {
-  width: 32px;
-  height: 22px;
+  width: 30px;
+  height: 17px;
 }
 
 .switch-sm .switch-slider {
@@ -13303,8 +13303,8 @@ canvas {
 }
 
 .switch-sm .switch-slider::before {
-  width: 16px;
-  height: 16px;
+  width: 11px;
+  height: 11px;
 }
 
 .switch-sm .switch-slider::after {
@@ -13312,8 +13312,8 @@ canvas {
 }
 
 .switch-sm .switch-input:checked ~ .switch-slider::before {
-  -webkit-transform: translateX(10px);
-  transform: translateX(10px);
+  -webkit-transform: translateX(13px);
+  transform: translateX(13px);
 }
 
 .switch-label {
@@ -13377,7 +13377,7 @@ canvas {
 
 .switch-label.switch-sm {
   width: 40px;
-  height: 22px;
+  height: 17px;
 }
 
 .switch-label.switch-sm .switch-slider {
@@ -13385,8 +13385,8 @@ canvas {
 }
 
 .switch-label.switch-sm .switch-slider::before {
-  width: 16px;
-  height: 16px;
+  width: 11px;
+  height: 11px;
 }
 
 .switch-label.switch-sm .switch-slider::after {
@@ -13394,8 +13394,8 @@ canvas {
 }
 
 .switch-label.switch-sm .switch-input:checked ~ .switch-slider::before {
-  -webkit-transform: translateX(18px);
-  transform: translateX(18px);
+  -webkit-transform: translateX(23px);
+  transform: translateX(23px);
 }
 
 .switch-3d .switch-slider {
@@ -13429,18 +13429,18 @@ canvas {
 }
 
 .switch-3d.switch-sm {
-  width: 32px;
-  height: 22px;
+  width: 30px;
+  height: 17px;
 }
 
 .switch-3d.switch-sm .switch-slider::before {
-  width: 22px;
-  height: 22px;
+  width: 17px;
+  height: 17px;
 }
 
 .switch-3d.switch-sm .switch-input:checked ~ .switch-slider::before {
-  -webkit-transform: translateX(10px);
-  transform: translateX(10px);
+  -webkit-transform: translateX(13px);
+  transform: translateX(13px);
 }
 
 .switch-primary .switch-input:checked + .switch-slider {

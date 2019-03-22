@@ -1,7 +1,19 @@
 
 #mapid {
     height: 400px;
-
-
-
 }
+
+/* надо попробовать обойтись без этого */
+.rsdu-label-align-center{
+    position:relative;
+    top:2px;
+}
+
+.rsdu-clip {
+    display: inline-block;
+    width: 135px;
+    white-space: nowrap; /* Запрещаем перенос строк */
+    overflow: hidden; /* Обрезаем все, что не помещается в область */
+    text-overflow: ellipsis; /* Добавляем многоточие */
+}
+/*# sourceMappingURL=custom.css.map */
