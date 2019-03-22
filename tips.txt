@@ -1,0 +1,12 @@
+
+# serve with hot reload at localhost:3000.
+$ npm run serve
+
+
+
+# build for production with minification
+$ npm run build
+
+
+# A CLI tool to run multiple npm-scripts in parallel or sequential
+npm-run-all
