@@ -40,7 +40,7 @@
     "url": "git+https://github.com/coreui/coreui-free-bootstrap-admin-template.git"
   },
   "scripts": {
-    "build": "npm-run-all build-clean build-copy build-vendors",
+    "build": "npm-run-all build-clean build-copy build-vendors rsdu-build rsdu-login-build",
     "build-clean": "rimraf dist",
     "build-copy": "copyfiles -a -e \"src/scss/**/*\" -u 1 \"src/**/*\" dist/",
     "build-vendors": "node build/vendors.js",
@@ -57,10 +57,14 @@
     "localhost-dist": "browser-sync start --server \"./dist\"",
     "pug": "node build/pug.js",
     "release-version": "node build/change-version.js",
-    "serve": "npm-run-all --parallel localhost watch-css watch-js",
+    "serve": "npm-run-all --parallel localhost watch-css watch-js watch-rsdu watch-rsdu-login",
     "watch-css": "nodemon --ignore dist/ -e scss -x \"npm run css\"",
     "watch-js": "nodemon --watch src/js/src/ -x \"npm run js\"",
-    "watch-pug": "nodemon -e pug -x \"npm run pug\""
+    "watch-pug": "nodemon -e pug -x \"npm run pug\"",
+    "watch-rsdu": "nodemon --watch rsdu/src/js/ -x \"npm run rsdu-build && npm run rsdu-login-build\"",
+    "rsdu-build": "webpack --mode development",
+    "watch-rsdu-login": "nodemon --watch rsdu/src/js/login.js -x \"npm run rsdu-login-build\"",
+    "rsdu-login-build": "webpack --mode development --config webpack.config.login.js"
   },
   "dependencies": {
     "@coreui/coreui": "^2.1.7",
@@ -72,10 +76,15 @@
     "flag-icon-css": "^3.2.1",
     "font-awesome": "4.7.0",
     "jquery": "3.3.1",
+    "leaflet": "^1.4.0",
+    "leaflet.fullscreen": "^1.4.5",
     "pace-progress": "1.0.2",
     "perfect-scrollbar": "^1.4.0",
     "popper.js": "^1.14.7",
-    "simple-line-icons": "2.4.1"
+    "simple-line-icons": "2.4.1",
+    "socket.io-client": "^2.2.0",
+    "typeahead.js": "github:twitter/typeahead.js#master",
+    "ws": "^6.2.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
@@ -83,13 +92,18 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.3.2",
     "@babel/preset-env": "^7.3.1",
     "autoprefixer": "^9.4.8",
+    "babel-core": "^6.26.3",
     "babel-eslint": "^10.0.1",
+    "babel-loader": "^8.0.5",
     "babel-plugin-transform-es2015-modules-strip": "^0.1.1",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-3": "^6.24.1",
     "browser-sync": "^2.26.3",
     "chalk": "^2.4.2",
     "clean-css-cli": "^4.2.1",
     "copyfiles": "^2.1.0",
     "cross-env": "^5.2.0",
+    "css-loader": "^2.1.1",
     "eslint": "^5.14.1",
     "eslint-plugin-compat": "^2.7.0",
     "foreach-cli": "^1.8.1",
@@ -97,15 +111,20 @@
     "node-sass": "^4.11.0",
     "nodemon": "^1.18.10",
     "npm-run-all": "^4.1.5",
+    "path": "^0.12.7",
     "postcss-cli": "^6.1.2",
     "pug": "^2.0.3",
     "rimraf": "^2.6.3",
     "shelljs": "^0.8.3",
+    "style-loader": "^0.23.1",
     "stylelint": "^9.10.1",
     "stylelint-config-recommended-scss": "^3.2.0",
     "stylelint-config-standard": "^18.2.0",
     "stylelint-order": "^2.0.0",
-    "stylelint-scss": "^3.5.3"
+    "stylelint-scss": "^3.5.3",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "^3.2.1"
   },
   "engines": {
     "node": ">=6"

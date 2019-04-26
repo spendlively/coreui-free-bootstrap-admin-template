@@ -1,7 +1,11 @@
-
-#mapid {
-    height: 400px;
+/*Размер карты*/
+.container-fluid, .container-fluid>div, .container-fluid>div>div.card, .container-fluid>div>div.card{
+    height: 100%;
 }
+#rsdu-map-container {
+    height: 100%;
+}
+/*End размер карты*/
 
 /* надо попробовать обойтись без этого */
 .rsdu-label-align-center{
@@ -11,9 +15,17 @@
 
 .rsdu-clip {
     display: inline-block;
-    width: 135px;
+    width: 130px;
     white-space: nowrap; /* Запрещаем перенос строк */
     overflow: hidden; /* Обрезаем все, что не помещается в область */
     text-overflow: ellipsis; /* Добавляем многоточие */
+}
+
+.sidebar .nav-dropdown.open > .nav-dropdown-items {
+    max-height: 10000px;
+}
+
+#rsdu-search-dropdown-menu.dropdown-menu{
+    border: 0px;
 }
 /*# sourceMappingURL=custom.css.map */

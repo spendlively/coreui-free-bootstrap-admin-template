@@ -1,0 +1,60 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "timestamp": "1555999010",
+      "action": "Включение",
+      "subject": "В-12",
+      "place": "ПС Валдай",
+      "status": "red"
+    },
+    {
+      "id": 2,
+      "timestamp": "1555999010",
+      "action": "Отключение",
+      "subject": "В-12",
+      "place": "ПС Валдай",
+      "status": "green"
+    },
+    {
+      "id": 3,
+      "timestamp": "1555999010",
+      "action": "Включение",
+      "subject": "В-12",
+      "place": "ПС Валдай",
+      "status": "red"
+    },
+    {
+      "id": 4,
+      "timestamp": "1555999010",
+      "action": "Отключение",
+      "subject": "В-12",
+      "place": "ПС Валдай",
+      "status": "green"
+    },
+    {
+      "id": 5,
+      "timestamp": "1555999010",
+      "action": "Включение",
+      "subject": "В-12",
+      "place": "ПС Валдай",
+      "status": "red"
+    },
+    {
+      "id": 6,
+      "timestamp": "1555999010",
+      "action": "Отключение",
+      "subject": "В-12",
+      "place": "ПС Валдай",
+      "status": "green"
+    },
+    {
+      "id": 7,
+      "timestamp": "1555999010",
+      "action": "Включение",
+      "subject": "В-12",
+      "place": "ПС Валдай",
+      "status": "red"
+    }
+  ]
+}
