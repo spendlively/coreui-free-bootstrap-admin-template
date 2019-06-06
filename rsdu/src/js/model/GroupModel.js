@@ -1,4 +1,4 @@
-export default class Group {
+export default class GroupModel {
 
     constructor(options) {
         this.count = parseInt(options.count) || 0

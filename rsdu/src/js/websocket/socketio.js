@@ -1,55 +1,66 @@
-import $ from 'jquery'
 import io from 'socket.io-client'
+import { changeState } from '../map/map'
+import { addMarker, removeMarkerByGuid } from '../marker/marker'
+import MarkerModel from '../model/MarkerModel'
+import MessageModel from '../model/MessageModel'
+import { addMessage } from '../notification/notification'
+import {getCarDescriptionMap, removeCarByGuid, setCar} from "../car/car";
+import CarModel from "../model/CarModel";
 
 let socket = null
 
-export function init(){
+export function init() {
 
-    $("#socketio-json").click((event)=>{
-        console.log('DEBUG: click on socketio-json')
-        event.preventDefault();
-        json_button()
+  let address = window.location.protocol + '//' + window.location.host
+
+  socket = io(address)
+  window.rsdu_socket = socket
+
+  socket.on('connect', () => {
+    socket.emit('client_connected', { data: 'OMS client connected!' })
+  })
+
+  socket.on('state-changed', function (json) {
+    json.items.forEach((data) => {
+      changeState(data)
     })
+  })
 
-    $("#socketio-alert").click((event)=>{
-        console.log('DEBUG: click on socketio-alert')
-        event.preventDefault();
-        alert_button()
+  socket.on('notify', function (json) {
+    json.forEach((data) => {
+      addMessage(new MessageModel(data))
     })
+  })
 
-    let address = 'http://' + window.location.host + ':80'
-    // let address = 'http://' + '192.168.20.107' + ':8888'
+  socket.on('marker-set', function (json) {
+    json.forEach((data) => {
+      addMarker(new MarkerModel(data))
+    })
+  })
 
-    socket = io(address)
-    window.rsdu_socket = socket
+  socket.on('marker-remove', function (json) {
+    json.forEach((guid) => {
+      removeMarkerByGuid(guid)
+    })
+  })
 
-    console.log(address)
-    console.log(socket)
 
-    socket.on('connect', () => {
-        console.log('DEBUG: on connect!')
-        socket.emit('client_connected', {data: 'OMS client connected!'});
-    });
+  socket.on('car-set', function (json) {
+    json.forEach((data) => {
+      let carDescriptionModel = getCarDescriptionMap().get(data.guid)
 
-    socket.on('message', function (data) {
-        console.log('DEBUG: on message')
-        console.log('Message form backend: ' + JSON.stringify(data));
-        alert('Message form backend: ' + JSON.stringify(data));
-    });
+      if(!carDescriptionModel) return
 
-    socket.on('alert', function (data) {
-        console.log('DEBUG: on alert')
-        console.log('Alert Message: ' + JSON.stringify(data));
-        alert(data);
-    });
-}
+      data.descriptionModel = carDescriptionModel
+      let carModel = new CarModel(data)
 
-function json_button() {
-    console.log("DEBUG: json_button()")
-    socket.send('{"message": "test from OMS"}');
-}
+      setCar(carModel)
+    })
+  })
 
-function alert_button() {
-    console.log("DEBUG: alert_button()")
-    socket.emit('alert_button', 'Message from OMS!')
+  socket.on('car-remove', function (json) {
+    json.forEach((guid) => {
+      removeCarByGuid(guid)
+    })
+  })
 }

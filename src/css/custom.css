@@ -1,5 +1,5 @@
 /*Размер карты*/
-.container-fluid, .container-fluid>div, .container-fluid>div>div.card, .container-fluid>div>div.card{
+html, body, .container-fluid, .container-fluid>div, .container-fluid>div>div.card, .container-fluid>div>div.card{
     height: 100%;
 }
 #rsdu-map-container {
@@ -28,4 +28,32 @@
 #rsdu-search-dropdown-menu.dropdown-menu{
     border: 0px;
 }
+
+.rsdu-cursor-pointer{
+    cursor: pointer;
+}
 /*# sourceMappingURL=custom.css.map */
+
+.left-turn{
+    transform: scale(-1, 1);
+}
+
+.right-turn{
+    transform: scale(1, 1);
+}
+
+.car-message{
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.rsdu-car-runing{
+    border-left: 4px solid #ff0000;
+}
+
+.rsdu-car-stopped{
+    border-left: 4px solid #00ff00;
+}
+
+.rsdu-car-disabled{
+    border-left: 4px solid #c8ced3;
+}

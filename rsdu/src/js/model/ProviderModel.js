@@ -1,4 +1,4 @@
-export default class Provider {
+export default class ProviderModel {
 
     constructor(options) {
         this.enabled = parseInt(options.enabled) || 0

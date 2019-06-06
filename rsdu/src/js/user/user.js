@@ -3,15 +3,15 @@ import config from "../config/config";
 import {logout} from "../auth/auth";
 import {ajax} from '../ajax/ajax'
 import {userUrn} from '../ajax/urn'
-import User from '../entity/user'
+import UserModel from '../model/UserModel'
 
-let user,
+let userModel,
     labelId = "rsdu-user-label",
     imgId = "rsdu-user-img",
     logoutCls = "rsdu-logout-action";
 
 export function getUser() {
-    return user;
+    return userModel;
 }
 
 export function initUser() {
@@ -21,7 +21,7 @@ export function initUser() {
 
             if(json.status === "Error") logout();
 
-            user = new User(json)
+            userModel = new UserModel(json)
             render();
             initEventListeners();
         })
@@ -39,6 +39,6 @@ export function initEventListeners() {
 
 export function render() {
 
-    $(`#${labelId}`).text(user.name);
-    $(`#${imgId}`).attr("src", config.serverUrl + user.avatar);
+    $(`#${labelId}`).text(userModel.name);
+    $(`#${imgId}`).attr("src", config.serverUrl + userModel.avatar);
 }

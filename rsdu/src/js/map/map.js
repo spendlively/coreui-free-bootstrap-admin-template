@@ -1,38 +1,58 @@
 import L from "leaflet"
-// import "leaflet.fullscreen/Control.FullScreen.css"
+import 'leaflet.coordinates/dist/Leaflet.Coordinates-0.1.5.min'
+import 'leaflet.locatecontrol'
 import "leaflet.fullscreen/Control.FullScreen"
+import "./leaflet-ruler"
 import config from "../config/config"
 import {ajax} from "../ajax/ajax"
-import {mapConfigUrn, providerUrn, layerListUrn, layerGroupUrn, stateUrn} from "../ajax/urn"
-import MapConfig from "../entity/map"
-import Provider from "../entity/provider"
-import Layer from "../entity/layer"
-import Group from "../entity/group"
-import State from "../entity/state"
+import {mapModelUrn, providerUrn, layerListUrn, layerGroupUrn, stateUrn, layerStatesUrn} from "../ajax/urn"
+import MapModel from "../model/MapModel"
+import ProviderModel from "../model/ProviderModel"
+import LayerModel from "../model/LayerModel"
+import GroupModel from "../model/GroupModel"
+import StateModel from "../model/StateModel"
 import {Menu as LayerMenu} from "../menu/layers"
+import {getCard} from "./card"
+import {RSDU_LAYER_CARD_STATE, RSDU_LATITUDE, RSDU_LONGITUDE} from '../l10n/l10n'
+import {init as notification} from "../notification/notification"
+import {init as initMarkers} from "../marker/marker"
+import {init as initSocketio} from "../websocket/socketio"
+import {init as initCars, LAYER_ALIAS as CARS_LAYER_ALIAS} from "../car/car"
+import {initialPositionControl} from "./control"
 
 let containerId = 'rsdu-map-container',
     map,
-    mapConfig,
-    providers = {},
-    layers = [],
-    groups = [],
-    layerGroups = {},
-    states = {},
-    guidToLayerMap = {}
+    mapModel,
+    providerCollection = new Map(),
+    layerCollection = new Map(),
+    groupCollection = new Map(),
+    layerGroupCollection = new Map(),
+    stateCollection = new Map(),
+    guidToLayerMap = new Map(),
+    undefinedColor = '#808080',
+    carsLayerGroup = null,
+    markersLayerGroup = null
+
+export function getCarsLayerGroup(){
+    return carsLayerGroup
+}
+
+export function getMarkersLayerGroup(){
+    return markersLayerGroup
+}
 
 function fetchConfig() {
 
-    return ajax(`${config.serverUrl}${mapConfigUrn}`)
+    return ajax(`${config.serverUrl}${mapModelUrn}`)
         .then(json => {
             let configs = json.items.filter(item => item.selected === 1)
 
             if (configs.length > 1) throw new Error('Выбрано больше одной конфигурации для ГИС')
             else if (configs.length < 1) throw new Error('Не выбрано ни одной конфигурации для ГИС')
 
-            mapConfig = new MapConfig(configs[0])
+            mapModel = new MapModel(configs[0])
 
-            return mapConfig
+            return mapModel
         })
 }
 
@@ -42,11 +62,11 @@ function fetchProviders() {
         .then(json => {
 
             json.items.forEach(item => {
-                let provider = new Provider(item)
-                providers[provider.id] = provider;
+                let providerModel = new ProviderModel(item)
+                providerCollection.set(providerModel.id, providerModel);
             })
 
-            return providers
+            return providerCollection
         })
 }
 
@@ -56,10 +76,10 @@ function fetchLayers() {
         .then(json => {
 
             json.items.forEach(item => {
-                layers.push(new Layer(item))
+                layerCollection.set(item.id, new LayerModel(item))
             })
 
-            return layers
+            return layerCollection
         })
 }
 
@@ -69,10 +89,11 @@ function fetchLayerGroups() {
         .then(json => {
 
             json.items.forEach(item => {
-                groups.push(new Group(item))
+                let groupModel = new GroupModel(item)
+                groupCollection.set(groupModel.id, groupModel)
             })
 
-            return groups
+            return groupCollection
         })
 }
 
@@ -82,8 +103,8 @@ function fetchStates() {
         .then(json => {
 
             json.items.forEach(item => {
-                let state = new State(item)
-                states[state.id] = state
+                let stateModel = new StateModel(item)
+                stateCollection.set(stateModel.alias, stateModel)
             })
 
             return {}
@@ -94,40 +115,58 @@ export function getMap() {
     return map
 }
 
-export function getLayerGroups() {
-    return layerGroups
+export function getLayerGroupCollection() {
+    return layerGroupCollection
 }
 
-export function getLayers() {
-    return layers
+export function getLayerCollection() {
+    return layerCollection
 }
 
 export function getGuidToLayerMap() {
     return guidToLayerMap
 }
 
+export function getStates() {
+    return stateCollection
+}
+
 export function init() {
 
     Promise.all([
-        fetchConfig(),
-        fetchProviders(),
-        fetchLayers(),
-        fetchLayerGroups(),
         fetchStates()
     ]).then(args => {
-        renderMap()
+        Promise.all([
+            fetchConfig(),
+            fetchProviders(),
+            fetchLayers(),
+            fetchLayerGroups(),
+        ]).then(args => {
+            notification()
+            renderMap()
+            initMarkers()
+            initCars()
+            initSocketio()
+            getPoints()
+        })
     })
 }
 
 function renderMap() {
 
+    let mapContainer = $('#' + containerId),
+        mapContainerParent = mapContainer.parent()
+
+    mapContainer.height(mapContainerParent.height())
+    $(window).resize(function () {
+        mapContainer.height(mapContainerParent.height())
+    });
+
     let baseLayers = {},
         providersCount = 0
 
-    for (let ind in providers) {
-        if (!providers.hasOwnProperty(ind)) continue
-        let provider = providers[ind]
-        baseLayers[provider.title] = L.tileLayer(provider.url, {id: provider.name})
+    for (let [ind, providerModel] of providerCollection) {
+        baseLayers[providerModel.title] = L.tileLayer(providerModel.url, {id: providerModel.name})
         providersCount++
     }
 
@@ -137,85 +176,219 @@ function renderMap() {
             position: 'topleft'
         },
         preferCanvas: true,
-        center: mapConfig.coordinates,
-        zoom: mapConfig.scale,
-        layers: [baseLayers[providers[mapConfig.providerId].title]]
+        center: mapModel.coordinates,
+        zoom: mapModel.scale,
+        layers: [baseLayers[providerCollection.get(mapModel.providerId).title]]
     })
 
-    if(providersCount > 1) L.control.layers(baseLayers).addTo(map)
+    if (providersCount > 1) L.control.layers(baseLayers).addTo(map)
 
-    layers.forEach(layer => {
+    for (let [key, layerModel] of layerCollection) {
 
-        layerGroups[layer.id] = L.layerGroup();
+        let state = stateCollection.get(layerModel.stateAlias),
+            color = state.color ? '#' + state.color : undefinedColor,
+            // layerGroup = L.layerGroup()
+            layerGroup = L.featureGroup()
 
-        L.geoJSON(layer.kml, {
+        layerGroup.addTo(map)
+
+        if(layerModel.alias === CARS_LAYER_ALIAS) carsLayerGroup = layerGroup
+        else if(layerModel.alias === 'MARKERS') markersLayerGroup = layerGroup
+
+        layerGroupCollection.set(layerModel.id, layerGroup);
+
+        if(layerModel.kml === null) continue
+
+        L.geoJSON(layerModel.kml, {
+
+            style: function (feature) {
+                return {color: color}
+            },
+
             pointToLayer: function (feature, latlng) {
-                let circleMarker = L.circleMarker(latlng, {
-                    color: 'black',
+                return L.circleMarker(latlng, {
                     fillColor: 'white',
                     fillOpacity: 1,
-                    radius: 5,
+                    radius: 4,
                     weight: 1
                 })
-
-                return circleMarker
             },
-            onEachFeature: function (feature, layer) {
+            onEachFeature: function (feature, leafletLayer) {
 
-                guidToLayerMap[feature.properties.guid] = layer
-                bindSelectingLayer(feature, layer)
-                bindPopup(feature, layer)
+                leafletLayer.rsduLayerModel = layerModel
+                guidToLayerMap.set(feature.properties.guid, leafletLayer)
+                bindSelectingLayer(feature, leafletLayer)
+                bindPopup(feature, leafletLayer)
             }
-        }).addTo(layerGroups[layer.id])
-
-        layerGroups[layer.id].addTo(map)
-    })
+        }).addTo(layerGroupCollection.get(layerModel.id))
+    }
 
     let layerMenu = new LayerMenu({
-        layers: layers,
-        groups: groups
+        layerCollection: layerCollection,
+        groupCollection: groupCollection
     });
 
     layerMenu.render();
+
+    initLayerStates()
+
+    // //Геолокация
+    // L.control.locate({
+    //     strings: {
+    //         title: "Show me where I am"
+    //     }
+    // }).addTo(map);
+
+    initialPositionControl(mapModel).addTo(map)
+
+    //Координаты мыши
+    L.control.coordinates({
+        position: "bottomleft",
+        decimals: 6,
+        decimalSeperator: ".",
+        labelTemplateLat: RSDU_LATITUDE.charAt(0).toUpperCase() + ": {y}",
+        labelTemplateLng: RSDU_LONGITUDE.charAt(0).toUpperCase() + ": {x}"
+    }).addTo(map)
+
+    L.control.ruler({
+        position: 'topleft',
+        lengthUnit: {
+            display: 'км',              // This is the display value will be shown on the screen. Example: 'meters'
+            decimal: 2,                 // Distance result will be fixed to this value.
+            factor: null,               // This value will be used to convert from kilometers. Example: 1000 (from kilometers to meters)
+            // label: 'Distance:'
+            label: 'Расстояние:'
+        },
+        angleUnit: {
+            display: '&deg;',           // This is the display value will be shown on the screen. Example: 'Gradian'
+            decimal: 2,                 // Bearing result will be fixed to this value.
+            factor: null,                // This option is required to customize angle unit. Specify solid angle value for angle unit. Example: 400 (for gradian).
+            // label: 'Bearing:'
+            label: 'Азимут:'
+        }
+    }).addTo(map);
 }
 
-function bindPopup(feature, layer){
+function initLayerStates() {
 
-    let popupHtml = ""
-
-    //Ставлю name на первое место
-    if(feature.properties['name']) popupHtml += `<tr><td><strong>name:&nbsp;</strong></td><td class="text-nowrap">${feature.properties['name']}</td></tr>`
-
-    for(let prop in feature.properties){
-        if(!feature.properties.hasOwnProperty(prop)) continue
-        if(prop === 'styleUrl' || prop === 'name') continue
-
-        popupHtml += `<tr><td><strong>${prop}:&nbsp;</strong></td><td class="text-nowrap">${feature.properties[prop]}</td></tr>`
-    }
-
-    if(popupHtml){
-        layer.bindPopup(`<table border="0">${popupHtml}</table>`)
-    }
+    ajax(`${config.serverUrl}${layerStatesUrn}`)
+        .then(json => {
+            json.items.forEach((item) => {
+                changeState(item)
+            })
+        })
 }
 
-function bindSelectingLayer(feature, layer){
+function getPopupContent(feature, leafletLayer) {
 
-    layer.on('popupopen', ()=>{
+    let popupHtml = "",
+        card = getCard(),
+        layerModel = leafletLayer.rsduLayerModel,
+        state = stateCollection.get(layerModel.stateAlias)
+
+    if (layerModel.name) popupHtml += `<tr><td align="right"><strong>${card.get('layer')}:&nbsp;</strong></td><td class="text-nowrap">${layerModel.name}</td></tr>`
+
+    for (let key of card.keys()) {
+        if (!feature.properties.hasOwnProperty(key)) continue
+        popupHtml += `<tr><td align="right"><strong>${card.get(key)}:&nbsp;</strong></td><td class="text-nowrap">${feature.properties[key]}</td></tr>`
+    }
+
+    popupHtml += `<tr><td align="right"><strong>${RSDU_LAYER_CARD_STATE}:&nbsp;</strong></td><td class="text-nowrap">${state.name}</td></tr>`
+
+    return `<table border="0">${popupHtml}</table>`
+}
+
+function bindPopup(feature, leafletLayer) {
+
+    leafletLayer.on('click', function () {
+        leafletLayer.setPopupContent(getPopupContent(feature, leafletLayer))
+    })
+
+    leafletLayer.bindPopup('', {maxWidth: config.popupMaxWidth})
+}
+
+function bindSelectingLayer(feature, layer) {
+
+    layer.on('popupopen', () => {
         activateLayer(feature, layer)
     })
 
-    layer.on('popupclose', ()=>{
+    layer.on('popupclose', () => {
         deactivateLayer(feature, layer)
     })
 }
 
-function activateLayer(feature, layer){
-    // console.log(layer.defaultOptions.color, layer.options.color)
-    layer.setStyle({color: 'red'})
+function activateLayer(feature, layer) {
+
+    let state = stateCollection.get('Selected'),
+        color = state.color ? '#' + state.color : '#800000'
+
+    layer.setStyle({color: color})
     layer.bringToFront()
 }
 
-function deactivateLayer(feature, layer){
-    // console.log(layer.defaultOptions.color, layer.options.color)
-    layer.setStyle({color: layer.defaultOptions.color})
+function deactivateLayer(feature, layer) {
+
+    let state = stateCollection.get(layer.rsduLayerModel.stateAlias),
+        color = state.color ? '#' + state.color : undefinedColor
+
+    layer.setStyle({color: color})
+}
+
+export function changeState(date) {
+
+    let layer = guidToLayerMap.get(date.guid),
+        state,
+        color
+
+    if (!layer) return
+
+    state = stateCollection.get(date.state),
+        color = state.color ? '#' + state.color : undefinedColor
+
+    if (!state) return
+
+    layer.rsduLayerModel.stateAlias = state.alias
+
+    layer.setStyle({color: color})
+    layer.bringToFront()
+}
+
+/**
+ *
+ */
+function getPoints()
+{
+    //http://192.168.8.74/?getpoints=4&addfirst=1
+    let url_string = window.location.href,
+        url = new URL(url_string),
+        count = parseInt(url.searchParams.get("getpoints")),
+        addfirst = parseInt(url.searchParams.get("addfirst")),
+        increment = 1,
+        first = '',
+        buffer = '',
+        coords = ''
+
+    if(isNaN(count)) return
+
+    let map = getMap()
+    map.on('mouseup', (e) => {
+
+        coords = `${e.latlng.lng},${e.latlng.lat},0 `
+        buffer += coords
+        if(increment === 1) first = coords
+
+        if(increment === count){
+
+            if(addfirst === 1) buffer += first
+
+            console.log(buffer)
+            prompt('Coordinates', buffer)
+
+            increment = 0
+            buffer = ''
+        }
+
+        increment++
+    })
 }

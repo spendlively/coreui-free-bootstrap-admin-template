@@ -1,11 +1,4 @@
 <!DOCTYPE html>
-<!--
-* CoreUI - Free Bootstrap Admin Template
-* @version v2.1.12
-* @link https://coreui.io
-* Copyright (c) 2018 creativeLabs Łukasz Holeczek
-* Licensed under MIT (https://coreui.io/license)
--->
 
 <html lang="en">
 <head>
@@ -26,10 +19,13 @@
 
     <!-- Main styles for this application-->
     <link href="css/style.css" rel="stylesheet">
-    <!--<link href="vendors/pace-progress/css/pace.min.css" rel="stylesheet">-->
 
     <link rel="stylesheet" href="css/custom.css"/>
+    <link rel="stylesheet" href="css/leaflet-ruler.css"/>
     <link href="css/leaflet.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="node_modules/leaflet.locatecontrol/dist/L.Control.Locate.css" />
+    <link rel="stylesheet" href="node_modules/leaflet.coordinates/dist/Leaflet.Coordinates-0.1.5.css" />
 
 </head>
 <body class="app header-fixed sidebar-fixed aside-menu-fixed sidebar-lg-show">
@@ -37,11 +33,13 @@
     <button class="navbar-toggler sidebar-toggler d-lg-none mr-auto" type="button" data-toggle="sidebar-show">
         <span class="navbar-toggler-icon"></span>
     </button>
-    <a class="navbar-brand" href="#">
+    <!--<a class="navbar-brand" href="#">-->
+    <a class="navbar-brand d-md-down-none" href="#">
         <img class="navbar-brand-full" src="img/brand/rsdu_logo.svg" width="136" height="34" alt="CoreUI Logo">
     </a>
     <ul class="nav navbar-nav ml-auto">
-        <li class="nav-item d-md-down-none">
+        <!--<li class="nav-item d-md-down-none">-->
+        <li class="nav-item">
 
             <div class="dropdown">
                 <input id="rsdu-search" class="form-control dropdown-toggle" type="text" placeholder="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -52,9 +50,10 @@
 
         <!-- Колокольчик -->
         <li class="nav-item dropdown d-md-down-none">
-            <a class="nav-link aside-menu-toggler" data-toggle="aside-menu-lg-show" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+        <!--<li class="nav-item dropdown">-->
+            <a id="rsdu-messages-bell" class="nav-link aside-menu-toggler" data-toggle="aside-menu-lg-show" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                 <i class="icon-bell"></i>
-                <span class="badge badge-pill badge-danger">5</span>
+                <span id="rsdu-messages-badge" class="badge badge-pill badge-danger"></span>
             </a>
         </li>
 
@@ -67,8 +66,6 @@
             <div class="dropdown-menu dropdown-menu-right">
                 <a class="dropdown-item rsdu-logout-action" href="#">
                     <i class="fa fa-lock"></i> <span id="rsdu-logout-btn">Logout</span></a>
-                <!--<a id="socketio-json" class="dropdown-item" href="#"><i class="fa fa-lock"></i> Json Message</a>-->
-                <!--<a id="socketio-alert" class="dropdown-item" href="#"><i class="fa fa-lock"></i> Alert Message</a>-->
             </div>
         </li>
     </ul>
@@ -77,23 +74,6 @@
     <div class="sidebar">
         <nav class="sidebar-nav">
             <ul class="nav" id="rsdu-left-menu">
-                <!--<li class="nav-title">Линии</li>-->
-
-                <!--<li class="nav-item nav-dropdown">-->
-                    <!--<a class="nav-link nav-dropdown-toggle" href="#">-->
-                        <!--<i class="nav-icon icon-puzzle"></i> 110кВ</a>-->
-                    <!--<ul class="nav-dropdown-items">-->
-                        <!--<li class="nav-item">-->
-                            <!--<a class="nav-link" href="#">-->
-                                <!--<div class="rsdu-clip">л.Велильская-666666</div>-->
-                                <!--<label class="switch switch-pill switch-outline-dark-alt switch-sm float-right rsdu-label-align-center">-->
-                                    <!--<input class="switch-input" type="checkbox" checked="">-->
-                                    <!--<span class="switch-slider"></span>-->
-                                <!--</label>-->
-                            <!--</a>-->
-                        <!--</li>-->
-                    <!--</ul>-->
-                <!--</li>-->
             </ul>
         </nav>
         <button class="sidebar-minimizer brand-minimizer" type="button"></button>
@@ -164,335 +144,42 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#messages" role="tab">
-                    <i class="icon-speech"></i>
+                <a class="nav-link" data-toggle="tab" href="#messages" role="tab" aria-selected="true">
+                    <i class="icon-location-pin"></i>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#settings" role="tab">
-                    <i class="icon-settings"></i>
+                <a class="nav-link" data-toggle="tab" href="#cars" role="tab" aria-selected="false">
+                    <i class="fa fa-truck"></i>
                 </a>
             </li>
         </ul>
         <!-- Tab panes-->
         <div class="tab-content">
             <div class="tab-pane active" id="timeline" role="tabpanel">
-                <div id="rsdu-messages" class="list-group list-group-accent">
-                    <div class="list-group-item list-group-item-accent-secondary bg-light text-center font-weight-bold text-muted text-uppercase small">
-                        Сегодня
-                    </div>
-                    <div class="list-group-item list-group-item-accent-success list-group-item-divider">
-                        <div class="avatar float-right">
-
-                        </div>
-                        <div>Включение
-                            <strong>В-12</strong>
-                        </div>
-                        <small class="text-muted mr-3">
-                            <i class="icon-calendar"></i>&nbsp; 10:22:45
-                        </small>
-                        <small class="text-muted">
-                            <i class="icon-location-pin"></i>&nbsp; ПС Валдай
-                        </small>
-                    </div>
-                    <div class="list-group-item list-group-item-accent-danger">
-                        <div class="avatar float-right">
-
-                        </div>
-                        <div>Отключение
-                            <strong>В-12</strong>
-                        </div>
-                        <small class="text-muted mr-3">
-                            <i class="icon-calendar"></i>&nbsp; 10:23:06
-                        </small>
-                        <small class="text-muted">
-                            <i class="icon-location-pin"></i>&nbsp; ПС Валдай
-                        </small>
-                    </div>
-                    <div class="list-group-item list-group-item-accent-secondary bg-light text-center font-weight-bold text-muted text-uppercase small">
-                        Вчера
-                    </div>
-                    <div class="list-group-item list-group-item-accent-danger list-group-item-divider">
-                        <div>Отключение
-                            <strong>В-11</strong>
-                        </div>
-                        <small class="text-muted mr-3">
-                            <i class="icon-calendar"></i>&nbsp; 22:25:45
-                        </small>
-                        <small class="text-muted">
-                            <i class="icon-location-pin"></i>&nbsp; ПС Дворец
-                        </small>
-                    </div>
-                    <!--<div class="list-group-item list-group-item-accent-success list-group-item-divider">-->
-                        <!--<div class="avatar float-right">-->
-
-                        <!--</div>-->
-                        <!--<div>Включение-->
-                            <!--<strong>В-12</strong>-->
-                        <!--</div>-->
-                        <!--<small class="text-muted mr-3">-->
-                            <!--<i class="icon-calendar"></i>&nbsp; 21:12:24-->
-                        <!--</small>-->
-                        <!--<small class="text-muted">-->
-                            <!--<i class="icon-location-pin"></i>&nbsp; ПС Дворец-->
-                        <!--</small>-->
-                    <!--</div>-->
-                    <!--<div class="list-group-item list-group-item-accent-danger list-group-item-divider">-->
-                        <!--<div class="avatar float-right">-->
-
-                        <!--</div>-->
-                        <!--<div>Отключение-->
-                            <!--<strong>В-12</strong>-->
-                        <!--</div>-->
-                        <!--<small class="text-muted mr-3">-->
-                            <!--<i class="icon-calendar"></i>&nbsp; 21:11:07-->
-                        <!--</small>-->
-                        <!--<small class="text-muted">-->
-                            <!--<i class="icon-location-pin"></i>&nbsp; ПС Дворец-->
-                        <!--</small>-->
-                    <!--</div>-->
-                    <!--<div class="list-group-item list-group-item-accent-success list-group-item-divider">-->
-                        <!--<div class="avatar float-right">-->
-
-                        <!--</div>-->
-                        <!--<div>Включение-->
-                            <!--<strong>В-12</strong>-->
-                        <!--</div>-->
-                        <!--<small class="text-muted mr-3">-->
-                            <!--<i class="icon-calendar"></i>&nbsp; 20:24:45-->
-                        <!--</small>-->
-                        <!--<small class="text-muted">-->
-                            <!--<i class="icon-location-pin"></i>&nbsp; ПС Валдай-->
-                        <!--</small>-->
-                    <!--</div>-->
-                    <!--<div class="list-group-item list-group-item-accent-danger">-->
-                        <!--<div class="avatar float-right">-->
-
-                        <!--</div>-->
-                        <!--<div>Отключение-->
-                            <!--<strong>В-12</strong>-->
-                        <!--</div>-->
-                        <!--<small class="text-muted mr-3">-->
-                            <!--<i class="icon-calendar"></i>&nbsp; 20:23:06-->
-                        <!--</small>-->
-                        <!--<small class="text-muted">-->
-                            <!--<i class="icon-location-pin"></i>&nbsp; ПС Валдай-->
-                        <!--</small>-->
-                    <!--</div>-->
-                </div>
+                <div id="rsdu-messages" class="list-group list-group-accent"></div>
             </div>
-            <div class="tab-pane p-3" id="messages" role="tabpanel">
-                <div class="message">
-                    <div class="py-3 pb-5 mr-3 float-left">
-                        <div class="avatar">
-                            <img class="img-avatar" src="img/avatars/7.jpg" alt="admin@bootstrapmaster.com">
-                            <span class="avatar-status badge-success"></span>
-                        </div>
-                    </div>
-                    <div>
-                        <small class="text-muted">Lukasz Holeczek</small>
-                        <small class="text-muted float-right mt-1">1:52 PM</small>
-                    </div>
-                    <div class="text-truncate font-weight-bold">Lorem ipsum dolor sit amet</div>
-                    <small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                        tempor incididunt...
-                    </small>
-                </div>
-                <hr>
-                <div class="message">
-                    <div class="py-3 pb-5 mr-3 float-left">
-                        <div class="avatar">
-                            <img class="img-avatar" src="img/avatars/7.jpg" alt="admin@bootstrapmaster.com">
-                            <span class="avatar-status badge-success"></span>
-                        </div>
-                    </div>
-                    <div>
-                        <small class="text-muted">Lukasz Holeczek</small>
-                        <small class="text-muted float-right mt-1">1:52 PM</small>
-                    </div>
-                    <div class="text-truncate font-weight-bold">Lorem ipsum dolor sit amet</div>
-                    <small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                        tempor incididunt...
-                    </small>
-                </div>
-                <hr>
-                <div class="message">
-                    <div class="py-3 pb-5 mr-3 float-left">
-                        <div class="avatar">
-                            <img class="img-avatar" src="img/avatars/7.jpg" alt="admin@bootstrapmaster.com">
-                            <span class="avatar-status badge-success"></span>
-                        </div>
-                    </div>
-                    <div>
-                        <small class="text-muted">Lukasz Holeczek</small>
-                        <small class="text-muted float-right mt-1">1:52 PM</small>
-                    </div>
-                    <div class="text-truncate font-weight-bold">Lorem ipsum dolor sit amet</div>
-                    <small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                        tempor incididunt...
-                    </small>
-                </div>
-                <hr>
-                <div class="message">
-                    <div class="py-3 pb-5 mr-3 float-left">
-                        <div class="avatar">
-                            <img class="img-avatar" src="img/avatars/7.jpg" alt="admin@bootstrapmaster.com">
-                            <span class="avatar-status badge-success"></span>
-                        </div>
-                    </div>
-                    <div>
-                        <small class="text-muted">Lukasz Holeczek</small>
-                        <small class="text-muted float-right mt-1">1:52 PM</small>
-                    </div>
-                    <div class="text-truncate font-weight-bold">Lorem ipsum dolor sit amet</div>
-                    <small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                        tempor incididunt...
-                    </small>
-                </div>
-                <hr>
-                <div class="message">
-                    <div class="py-3 pb-5 mr-3 float-left">
-                        <div class="avatar">
-                            <img class="img-avatar" src="img/avatars/7.jpg" alt="admin@bootstrapmaster.com">
-                            <span class="avatar-status badge-success"></span>
-                        </div>
-                    </div>
-                    <div>
-                        <small class="text-muted">Lukasz Holeczek</small>
-                        <small class="text-muted float-right mt-1">1:52 PM</small>
-                    </div>
-                    <div class="text-truncate font-weight-bold">Lorem ipsum dolor sit amet</div>
-                    <small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                        tempor incididunt...
-                    </small>
-                </div>
-            </div>
-            <div class="tab-pane p-3" id="settings" role="tabpanel">
-                <h6>Settings</h6>
-                <div class="aside-options">
-                    <div class="clearfix mt-4">
-                        <small>
-                            <b>Option 1</b>
-                        </small>
-                        <label class="switch switch-label switch-pill switch-success switch-sm float-right">
-                            <input class="switch-input" type="checkbox" checked="">
-                            <span class="switch-slider" data-checked="On" data-unchecked="Off"></span>
-                        </label>
-                    </div>
-                    <div>
-                        <small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-                            eiusmod
-                            tempor incididunt ut labore et dolore magna aliqua.
-                        </small>
-                    </div>
-                </div>
-                <div class="aside-options">
-                    <div class="clearfix mt-3">
-                        <small>
-                            <b>Option 2</b>
-                        </small>
-                        <label class="switch switch-label switch-pill switch-success switch-sm float-right">
-                            <input class="switch-input" type="checkbox">
-                            <span class="switch-slider" data-checked="On" data-unchecked="Off"></span>
-                        </label>
-                    </div>
-                    <div>
-                        <small class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-                            eiusmod
-                            tempor incididunt ut labore et dolore magna aliqua.
-                        </small>
-                    </div>
-                </div>
-                <div class="aside-options">
-                    <div class="clearfix mt-3">
-                        <small>
-                            <b>Option 3</b>
-                        </small>
-                        <label class="switch switch-label switch-pill switch-success switch-sm float-right">
-                            <input class="switch-input" type="checkbox">
-                            <span class="switch-slider" data-checked="On" data-unchecked="Off"></span>
-                        </label>
-                    </div>
-                </div>
-                <div class="aside-options">
-                    <div class="clearfix mt-3">
-                        <small>
-                            <b>Option 4</b>
-                        </small>
-                        <label class="switch switch-label switch-pill switch-success switch-sm float-right">
-                            <input class="switch-input" type="checkbox" checked="">
-                            <span class="switch-slider" data-checked="On" data-unchecked="Off"></span>
-                        </label>
-                    </div>
-                </div>
-                <hr>
-                <h6>System Utilization</h6>
-                <div class="text-uppercase mb-1 mt-4">
-                    <small>
-                        <b>CPU Usage</b>
-                    </small>
-                </div>
-                <div class="progress progress-xs">
-                    <div class="progress-bar bg-info" role="progressbar" style="width: 25%" aria-valuenow="25"
-                         aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <small class="text-muted">348 Processes. 1/4 Cores.</small>
-                <div class="text-uppercase mb-1 mt-2">
-                    <small>
-                        <b>Memory Usage</b>
-                    </small>
-                </div>
-                <div class="progress progress-xs">
-                    <div class="progress-bar bg-warning" role="progressbar" style="width: 70%" aria-valuenow="70"
-                         aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <small class="text-muted">11444GB/16384MB</small>
-                <div class="text-uppercase mb-1 mt-2">
-                    <small>
-                        <b>SSD 1 Usage</b>
-                    </small>
-                </div>
-                <div class="progress progress-xs">
-                    <div class="progress-bar bg-danger" role="progressbar" style="width: 95%" aria-valuenow="95"
-                         aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <small class="text-muted">243GB/256GB</small>
-                <div class="text-uppercase mb-1 mt-2">
-                    <small>
-                        <b>SSD 2 Usage</b>
-                    </small>
-                </div>
-                <div class="progress progress-xs">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: 10%" aria-valuenow="10"
-                         aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <small class="text-muted">25GB/256GB</small>
-            </div>
+            <div class="tab-pane p-3" id="messages" role="tabpanel"></div>
+            <div class="tab-pane" id="cars" role="tabpanel"></div>
         </div>
     </aside>
 </div>
 <footer class="app-footer">
     <div>
-        <a href="#">РСДУ5-OMS</a>
-        <span>&copy; 2019 ЭМА</span>
+        <a href="#" id="rsdu-copyrights-product"></a>
+        <span id="rsdu-copyrights-company"></span>
     </div>
 </footer>
 <!-- CoreUI and necessary plugins-->
 <script src="node_modules/jquery/dist/jquery.min.js"></script>
 <script src="node_modules/popper.js/dist/umd/popper.min.js"></script>
 <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-<!--<script src="node_modules/pace-progress/pace.min.js"></script>-->
 <script src="node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js"></script>
 <script src="node_modules/@coreui/coreui/dist/js/coreui.min.js"></script>
-<!-- Plugins and scripts required by this view-->
-<!--<script src="node_modules/chart.js/dist/Chart.min.js"></script>-->
-<!--<script src="node_modules/@coreui/coreui-plugin-chartjs-custom-tooltips/dist/js/custom-tooltips.min.js"></script>-->
-<!--<script src="js/main.js"></script>-->
+
+<!--<script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@[VERSION]/dist/L.Control.Locate.min.js" charset="utf-8"></script>-->
 
 <script src="js/rsdu.build.js"></script>
-
-<!--<link rel="stylesheet" href="leaflet.fullscreen-master/Control.FullScreen.css" />-->
-<!--<script src="leaflet.fullscreen-master/Control.FullScreen.js"></script>-->
 
 </body>
 </html>

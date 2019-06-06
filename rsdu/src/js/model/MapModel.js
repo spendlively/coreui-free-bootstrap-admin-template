@@ -1,4 +1,4 @@
-export default class MapConfig {
+export default class MapModel {
 
     constructor(options) {
         let coords = options.coordinates || [0, 0]
