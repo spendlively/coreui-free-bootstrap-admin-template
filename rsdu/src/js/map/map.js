@@ -159,7 +159,7 @@ function renderMap() {
 
     mapContainer.height(mapContainerParent.height())
     $(window).resize(function () {
-        mapContainer.height(mapContainerParent.height())
+        // mapContainer.height(mapContainerParent.height())
     });
 
     let baseLayers = {},
@@ -175,6 +175,7 @@ function renderMap() {
         fullscreenControlOptions: {
             position: 'topleft'
         },
+        scrollWheelZoom: false,
         preferCanvas: true,
         center: mapModel.coordinates,
         zoom: mapModel.scale,
@@ -187,7 +188,6 @@ function renderMap() {
 
         let state = stateCollection.get(layerModel.stateAlias),
             color = state.color ? '#' + state.color : undefinedColor,
-            // layerGroup = L.layerGroup()
             layerGroup = L.featureGroup()
 
         layerGroup.addTo(map)
@@ -253,16 +253,16 @@ function renderMap() {
     L.control.ruler({
         position: 'topleft',
         lengthUnit: {
-            display: 'км',              // This is the display value will be shown on the screen. Example: 'meters'
-            decimal: 2,                 // Distance result will be fixed to this value.
-            factor: null,               // This value will be used to convert from kilometers. Example: 1000 (from kilometers to meters)
+            display: 'км',
+            decimal: 2,
+            factor: null,
             // label: 'Distance:'
             label: 'Расстояние:'
         },
         angleUnit: {
-            display: '&deg;',           // This is the display value will be shown on the screen. Example: 'Gradian'
-            decimal: 2,                 // Bearing result will be fixed to this value.
-            factor: null,                // This option is required to customize angle unit. Specify solid angle value for angle unit. Example: 400 (for gradian).
+            display: '&deg;',
+            decimal: 2,
+            factor: null,
             // label: 'Bearing:'
             label: 'Азимут:'
         }
@@ -355,7 +355,7 @@ export function changeState(date) {
 }
 
 /**
- *
+ * Для генерации координат
  */
 function getPoints()
 {

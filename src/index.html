@@ -88,51 +88,71 @@
                     </div>
                 </div>
 
-                <!--<div class="card">-->
-                    <!--<div class="card-body">-->
-                        <!--<div id="rsdu-table">-->
-                            <!--&lt;!&ndash;<table class="table table-striped table-hover table-bordered">&ndash;&gt;-->
-                            <!--<table class="table table-hover table-bordered">-->
-                                <!--<thead>-->
-                                <!--<tr>-->
-                                    <!--<th scope="col">#</th>-->
-                                    <!--<th scope="col">Статус</th>-->
-                                    <!--<th scope="col">Оборудование</th>-->
-                                    <!--<th scope="col">Дата</th>-->
-                                    <!--<th scope="col">Адрес</th>-->
-                                    <!--<th scope="col">Описание</th>-->
-                                <!--</tr>-->
-                                <!--</thead>-->
-                                <!--<tbody>-->
-                                <!--<tr>-->
-                                    <!--<td scope="row">1</td>-->
-                                    <!--<td scope="col">Статус</td>-->
-                                    <!--<td scope="col">Выключатель В-10</td>-->
-                                    <!--<td scope="col">10.03.2019 16:22:33</td>-->
-                                    <!--<td scope="col">ул. Дачная 37</td>-->
-                                    <!--<td scope="col">Отключилась электроэнергия в доме</td>-->
-                                <!--</tr>-->
-                                <!--<tr>-->
-                                    <!--<td scope="row">2</td>-->
-                                    <!--<td scope="col">Статус</td>-->
-                                    <!--<td scope="col">Выключатель В-10</td>-->
-                                    <!--<td scope="col">10.03.2019 16:23:33</td>-->
-                                    <!--<td scope="col">ул. Дачная 37</td>-->
-                                    <!--<td scope="col">Отключилась электроэнергия в доме</td>-->
-                                <!--</tr>-->
-                                <!--<tr>-->
-                                    <!--<td scope="row">3</td>-->
-                                    <!--<td scope="col">Статус</td>-->
-                                    <!--<td scope="col">Выключатель В-10</td>-->
-                                    <!--<td scope="col">10.03.2019 16:24:33</td>-->
-                                    <!--<td scope="col">ул. Дачная 37</td>-->
-                                    <!--<td scope="col">Отключилась электроэнергия в доме</td>-->
-                                <!--</tr>-->
-                                <!--</tbody>-->
-                            <!--</table>-->
-                        <!--</div>-->
-                    <!--</div>-->
-                <!--</div>-->
+                <div class="card">
+                    <div class="card-body">
+
+                        <form>
+                            <div class="form-group">
+                                <input type="search" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter text here...">
+                            </div>
+                        </form>
+
+                        <div id="rsdu-table"></div>
+
+                        <div>
+                            <div id="rsdu-table-update-modal" class="modal" tabindex="-1" role="dialog">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-body">
+                                            <form>
+                                                <div class="form-group">
+                                                    <label for="rsdu-table-form-date">Дата</label>
+                                                    <input class="form-control" id="rsdu-table-form-date" type="datetime-local" name="date-input" placeholder="date">
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="rsdu-table-form-address">Адрес</label>
+                                                    <input type="text" class="form-control" id="rsdu-table-form-address" placeholder="Адрес">
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="rsdu-table-form-consumer">Потребитель</label>
+                                                    <input type="text" class="form-control" id="rsdu-table-form-consumer" placeholder="Потребитель">
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="rsdu-table-form-phone">Телефон</label>
+                                                    <input type="text" class="form-control" id="rsdu-table-form-phone" placeholder="Телефон">
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="rsdu-table-form-desc">Описание</label>
+                                                    <textarea class="form-control" id="rsdu-table-form-desc" rows="3"></textarea>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label>Статус</label>
+                                                    <div class="dropdown" id="rsdu-table-form-state-container">
+                                                        <input id="rsdu-table-form-state" data-state="green" class="form-control dropdown-toggle badge-success" type="text" placeholder="" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false" value="Направлена бригада">
+                                                        <div class="dropdown-menu" aria-labelledby="" aria-expanded="false">
+                                                            <a class="dropdown-item badge-success" data-state-alias="green" href="#">Направлена бригада</a>
+                                                            <a class="dropdown-item badge-danger" data-state-alias="red" href="#">Banned</a>
+                                                            <a class="dropdown-item badge-warning" data-state-alias="yellow" href="#">Pending</a>
+                                                            <a class="dropdown-item badge-info" data-state-alias="blue" href="#">Завершено</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                                                <button type="button" class="btn btn-primary rsdu-modal-save" data-dismiss="modal">ОК</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -141,6 +161,7 @@
             <li class="nav-item">
                 <a class="nav-link active" data-toggle="tab" href="#timeline" role="tab">
                     <i class="icon-list"></i>
+                    <!--<span class="badge badge-pill badge-danger">1</span>-->
                 </a>
             </li>
             <li class="nav-item">

@@ -219,6 +219,8 @@ function addMessage(carModel){
     //Время показывается только у сегодняшних сообщений
     if(dateformat(new Date(), 'ddmmyyyy') === dateformat(carModel.date, 'ddmmyyyy')){
         time = `<small class="text-muted float-right mt-1 rsdu-car-time"><i class="icon-calendar"></i>&nbsp; ${dateformat(carModel.date, 'HH:MM:ss')}</small>`
+    } else {
+        time = `<small class="text-muted float-right mt-1 rsdu-car-time"></small>`
     }
 
     let message = `

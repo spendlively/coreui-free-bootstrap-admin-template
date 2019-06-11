@@ -57,3 +57,11 @@ html, body, .container-fluid, .container-fluid>div, .container-fluid>div>div.car
 .rsdu-car-disabled{
     border-left: 4px solid #c8ced3;
 }
+
+.display-none{
+    display: none;
+}
+
+.rsdu-call-table td{
+    cursor: pointer;
+}
