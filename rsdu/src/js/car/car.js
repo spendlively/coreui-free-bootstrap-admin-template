@@ -135,11 +135,15 @@ function getPopupContent(carModel) {
 
     if(dateformat(now, 'ddmmyyyy') === dateformat(carModel.date, 'ddmmyyyy')){
         let diff = new Date(+now.getTime() - carModel.date.getTime() + (now.getTimezoneOffset() * 60 * 1000))
-        dateStr = `${dateformat(carModel.date, 'HH:MM:ss')} (${dateformat(diff, 'HH ч. MM мин. назад')})`
+
+        if(dateformat(now, 'HH:MM') === dateformat(carModel.date, 'HH:MM')){
+            dateStr = `${dateformat(carModel.date, 'HH:MM:ss')} (${dateformat(diff, 'ss сек. назад')})`
+        } else {
+            dateStr = `${dateformat(carModel.date, 'HH:MM:ss')} (${dateformat(diff, 'HH ч. MM мин. назад')})`
+        }
     } else {
         dateStr = dateformat(carModel.date, 'dd.mm.yyyy HH:MM:ss')
     }
-
 
     let popupHtml = `
             <table border="0">

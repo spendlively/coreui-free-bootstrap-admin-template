@@ -133,21 +133,44 @@ export function getStates() {
 
 export function init() {
 
+    // Promise.all([
+    //     fetchStates()
+    // ]).then(args => {
+    //     Promise.all([
+    //         fetchConfig(),
+    //         fetchProviders(),
+    //         fetchLayers(),
+    //         fetchLayerGroups(),
+    //     ]).then(args => {
+    //         notification()
+    //         renderMap()
+    //         renderMapItems()
+    //         initMarkers()
+    //         initCars()
+    //         initSocketio()
+    //         getPoints()
+    //     })
+    // })
+
     Promise.all([
         fetchStates()
     ]).then(args => {
         Promise.all([
             fetchConfig(),
             fetchProviders(),
-            fetchLayers(),
-            fetchLayerGroups(),
         ]).then(args => {
-            notification()
             renderMap()
-            initMarkers()
-            initCars()
-            initSocketio()
-            getPoints()
+            Promise.all([
+                fetchLayers(),
+                fetchLayerGroups()
+            ]).then(args => {
+                notification()
+                renderMapItems()
+                initMarkers()
+                initCars()
+                initSocketio()
+                getPoints()
+            })
         })
     })
 }
@@ -155,12 +178,12 @@ export function init() {
 function renderMap() {
 
     let mapContainer = $('#' + containerId),
-        mapContainerParent = mapContainer.parent()
+        jMapCardBody = $('#map-card-body'),
+        height = $(window).height() - $('header').height() - 50
 
-    mapContainer.height(mapContainerParent.height())
-    $(window).resize(function () {
-        // mapContainer.height(mapContainerParent.height())
-    });
+    mapContainer.height(height)
+    jMapCardBody.height(height)
+    $('.card').css('display', 'block')
 
     let baseLayers = {},
         providersCount = 0
@@ -183,6 +206,47 @@ function renderMap() {
     })
 
     if (providersCount > 1) L.control.layers(baseLayers).addTo(map)
+
+    initResizeListeners()
+
+    // //Геолокация
+    // L.control.locate({
+    //     strings: {
+    //         title: "Show me where I am"
+    //     }
+    // }).addTo(map);
+
+    initialPositionControl(mapModel).addTo(map)
+
+    //Координаты мыши
+    L.control.coordinates({
+        position: "bottomleft",
+        decimals: 6,
+        decimalSeperator: ".",
+        labelTemplateLat: RSDU_LATITUDE.charAt(0).toUpperCase() + ": {y}",
+        labelTemplateLng: RSDU_LONGITUDE.charAt(0).toUpperCase() + ": {x}"
+    }).addTo(map)
+
+    L.control.ruler({
+        position: 'topleft',
+        lengthUnit: {
+            display: 'км',
+            decimal: 2,
+            factor: null,
+            // label: 'Distance:'
+            label: 'Расстояние:'
+        },
+        angleUnit: {
+            display: '&deg;',
+            decimal: 2,
+            factor: null,
+            // label: 'Bearing:'
+            label: 'Азимут:'
+        }
+    }).addTo(map);
+}
+
+function renderMapItems() {
 
     for (let [key, layerModel] of layerCollection) {
 
@@ -231,42 +295,24 @@ function renderMap() {
     layerMenu.render();
 
     initLayerStates()
+}
 
-    // //Геолокация
-    // L.control.locate({
-    //     strings: {
-    //         title: "Show me where I am"
-    //     }
-    // }).addTo(map);
+function initResizeListeners(){
 
-    initialPositionControl(mapModel).addTo(map)
+    let jMapCardBody = $('#map-card-body'),
+        jRsduMapContainer = $('#rsdu-map-container'),
+        oldCardHeight = jMapCardBody.height()
 
-    //Координаты мыши
-    L.control.coordinates({
-        position: "bottomleft",
-        decimals: 6,
-        decimalSeperator: ".",
-        labelTemplateLat: RSDU_LATITUDE.charAt(0).toUpperCase() + ": {y}",
-        labelTemplateLng: RSDU_LONGITUDE.charAt(0).toUpperCase() + ": {x}"
-    }).addTo(map)
+    jMapCardBody.on('mouseup', function () {
+        let height = $(this).height()
 
-    L.control.ruler({
-        position: 'topleft',
-        lengthUnit: {
-            display: 'км',
-            decimal: 2,
-            factor: null,
-            // label: 'Distance:'
-            label: 'Расстояние:'
-        },
-        angleUnit: {
-            display: '&deg;',
-            decimal: 2,
-            factor: null,
-            // label: 'Bearing:'
-            label: 'Азимут:'
-        }
-    }).addTo(map);
+        if(height === oldCardHeight) return
+
+        oldCardHeight = height
+        jRsduMapContainer.height(height)
+        map.invalidateSize();
+    });
+
 }
 
 function initLayerStates() {

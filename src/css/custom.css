@@ -1,9 +1,10 @@
 /*Размер карты*/
-html, body, .container-fluid, .container-fluid>div, .container-fluid>div>div.card, .container-fluid>div>div.card{
-    height: 100%;
-}
+/*html, body, .container-fluid, .container-fluid>div, .container-fluid>div>div.card, .container-fluid>div>div.card{*/
+    /*height: 100%;*/
+/*}*/
 #rsdu-map-container {
-    height: 100%;
+    /*height: 100%;*/
+    /*height: 500px;*/
 }
 /*End размер карты*/
 
@@ -58,10 +59,15 @@ html, body, .container-fluid, .container-fluid>div, .container-fluid>div>div.car
     border-left: 4px solid #c8ced3;
 }
 
-.display-none{
-    display: none;
-}
-
 .rsdu-call-table td{
     cursor: pointer;
+}
+
+#map-card-body{
+    resize: vertical;
+    overflow: auto;
+}
+
+.card{
+    display: none;
 }

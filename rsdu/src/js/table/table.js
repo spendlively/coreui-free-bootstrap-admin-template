@@ -1,103 +1,96 @@
 import dateformat from "dateformat";
+import {ajax} from "../ajax/ajax";
+import config from "../config/config";
+import {outageListUrn, outageStateListUrn} from "../ajax/urn";
+import DemandStateModel from "../model/DemandStateModel";
+import DemandModel from "../model/DemandModel";
+import CustomerModel from "../model/CustomerModel";
+import {RSDU_SEARCH_PLACEHOLDER} from "../l10n/l10n";
+
+let demandStateMap = new Map(),
+    demandsMap = new Map(),
+    order = 'state-desc',
+    page = 1,
+    limit = 15,
+    count = 0,
+    pagesCount = 1
 
 export function init(){
 
-    initStateSelect()
-    initSave()
-    fetchRows()
+    $('#rsdu-table-search').attr('placeholder', RSDU_SEARCH_PLACEHOLDER)
+
+    fetchStates()
+        .then(args => {
+            return fetchDemands()
+        })
+        .then(args => {
+            initStateSelect()
+            initSave()
+            fetchRows()
+        })
 }
 
-let editingRowNum = null
+function fetchStates() {
 
-const STATES = {
-    green: {
-        cls: 'badge-success',
-        text: 'Направлена бригада'
-    },
-    red: {
-        cls: 'badge-danger',
-        text: 'Banned'
-    },
-    yellow: {
-        cls: 'badge-warning',
-        text: 'Pending'
-    },
-    blue: {
-        cls: 'badge-info',
-        text: 'Завершено'
-    },
+    return ajax(`${config.serverUrl}${outageStateListUrn}`)
+        .then(items => {
+            items.forEach(item => {
+                let outageStateModel = new DemandStateModel(item)
+                demandStateMap.set(outageStateModel.id, outageStateModel)
+            })
+            return {}
+        })
 }
 
-let data = [
-    {
-        id: 1,
-        timestamp: 1559817951540,
-        address: 'с. Лутавенка, ул. Иванова 10',
-        consumer: 'Петров С.И.',
-        phone: '+7903903903',
-        description: 'Отсутствует электричество',
-        state: 'green'
-    },
-    {
-        id: 2,
-        timestamp: 1559817951540,
-        address: 'с. Лутавенка, ул. Иванова 10',
-        consumer: 'Петров С.И.',
-        phone: '+7903903903',
-        description: 'Моргает лампочка',
-        state: 'red'
-    },
-    {
-        id: 3,
-        timestamp: 1559817951540,
-        address: 'с. Лутавенка, ул. Иванова 10',
-        consumer: 'Петров С.И.',
-        phone: '+7903903903',
-        description: 'Моргает лампочка',
-        state: 'yellow'
-    },
-    {
-        id: 4,
-        timestamp: 1559817951540,
-        address: 'с. Лутавенка, ул. Иванова 10',
-        consumer: 'Петров С.И.',
-        phone: '+7903903903',
-        description: 'Моргает лампочка',
-        state: 'blue'
-    }
-]
+function fetchDemands() {
 
-/**
-cls: "badge " + STATES.green.cls,
-text:  STATES.green.text
- */
+    return ajax(`${config.serverUrl}${outageListUrn}?order=${order}&page=${page}&limit=${limit}`)
+        .then(json => {
+
+            count = parseInt(json.count)
+            count = isNaN(count) ? 0 : count
+
+            json.items.sort((a, b) => {
+                return a.timestamp > b.timestamp ? -1 : 1
+            }).forEach(item => {
+
+                item.customer = new CustomerModel(item.customer)
+                item.state = new DemandStateModel(demandStateMap.get(item.state_id))
+
+                let demandModel = new DemandModel(item)
+                demandsMap.set(demandModel.id, demandModel)
+            })
+
+            return {}
+        })
+}
+
 function fetchRows(){
 
     let rows = ''
 
-    data.forEach((d) => {
+    for(let [key, demandModel] of demandsMap){
 
-        let date = new Date(d.timestamp),
-            today = dateformat(new Date(), 'ddmmyyyy') === dateformat(date, 'ddmmyyyy'),
-            dateStr = today ? `Сегодня ${dateformat(date, 'HH:MM:ss')}` : dateformat(date, 'dd.mm.yyyy HH:MM:ss'),
-            phoneStr = d.phone ? `тел: ${d.phone}` : ''
+        let today = dateformat(new Date(), 'ddmmyyyy') === dateformat(demandModel.date, 'ddmmyyyy'),
+            dateStr = today ? `Сегодня ${dateformat(demandModel.date, 'HH:MM:ss')}` : dateformat(demandModel.date, 'dd.mm.yyyy HH:MM:ss')
+
 
         rows += `
-            <tr>
-                <td class="rsdu-row-id display-none" scope="col">${d.id}</td>
+            <tr data-demand-id="${demandModel.id}">
+                <td class="rsdu-row-id" scope="col" align="right">${demandModel.id}</td>
                 <td scope="col" align="right">${dateStr}</td>
-                <td scope="col">${d.address} ${d.consumer} ${phoneStr}</td>
-                <td scope="col">${d.description}</td>
-                <td scope="col"><span class="badge ${STATES[d.state].cls}">${STATES[d.state].text}</span></td>
+                <td scope="col">${getConsumerCellData(demandModel)}</td>
+                <td scope="col">${demandModel.description}</td>
+                <td scope="col"><span class="badge ${demandModel.state.cls}">${demandModel.state.name}</span></td>
             </tr>        
         `
-    })
+    }
 
     let table = `
     <table class="rsdu-call-table table table-responsive-sm table-striped table-hover table-bordered">
         <thead>
         <tr>
-            <th class="display-none" scope="col">ID</th>
+            <th scope="col">№</th>
             <th scope="col">Дата</th>
             <th scope="col">Потребитель</th>
             <th scope="col">Описание</th>
@@ -107,8 +100,30 @@ function fetchRows(){
         <tbody>
         ${rows}
         </tbody>
-    </table>  
-    <ul class="pagination">
+    </table>
+    ${getPagination()}  
+    `
+
+    $('#rsdu-table').append($(table))
+
+    $('.rsdu-call-table tbody tr').on('click', function(el){
+
+        let id = parseInt($(this).find('td.rsdu-row-id').html())
+
+        id = isNaN(id) ? null : id
+
+        showUpdateForm(demandsMap.get(id))
+    })
+}
+
+function getPagination(){
+
+    let pagination = '',
+        pages = '',
+        headTail = `
+        <li class="page-item">
+            <a class="page-link" href="#"><<</a>
+        </li>
         <li class="page-item">
             <a class="page-link" href="#"><</a>
         </li>
@@ -121,29 +136,49 @@ function fetchRows(){
         <li class="page-item">
             <a class="page-link" href="#">></a>
         </li>
-    </ul>  
+        <li class="page-item">
+            <a class="page-link" href="#">>></a>
+        </li>
     `
 
-    $('#rsdu-table').append($(table))
 
-    $('.rsdu-call-table tbody tr').on('click', function(el){
 
-        let id = parseInt($(this).find('td.rsdu-row-id').html())
+    pagination = `
+        <ul class="pagination">
+            ${pages}
+        </ul>      
+    `
 
-        editingRowNum = isNaN(id) ? null : id
-
-        if(editingRowNum) showUpdateForm(data[editingRowNum-1])
-    })
+    return pagination
 }
 
+function getConsumerCellData(demandModel){
+
+    let strings = []
+
+    if(demandModel.demandAddress) strings.push(demandModel.demandAddress)
+    if(demandModel.customer.name) strings.push(demandModel.customer.name)
+    if(demandModel.demandAddress) strings.push(`тел: ${demandModel.demandPhone}`)
+
+    return strings.join('<br>')
+}
+
+/**
+ * Смена статуса в форме
+ */
 function initStateSelect(){
 
     let jContainer = $('#rsdu-table-form-state-container')
 
-    jContainer.find('a.dropdown-item').click(function(){
-        let stateAlias = $(this).attr('data-state-alias')
-        if(STATES[stateAlias] === undefined) return
-        updateFormState(stateAlias)
+    jContainer.find('a.dropdown-item').click(function(e){
+
+        e.preventDefault()
+
+        let stateId = parseInt($(this).attr('data-state-id'))
+
+        if(isNaN(stateId)) return
+
+        updateFormState(demandStateMap.get(stateId))
     })
 }
 
@@ -153,58 +188,70 @@ function initSave(){
 
     jModal.find('.rsdu-modal-save').click(function(){
 
+        let id = parseInt(jModal.find('#rsdu-table-form-id').val())
+
+        if(isNaN(id)) return
+
+        let demandModel = demandsMap.get(id)
+
+        if(!demandModel) return
+
         let dt = jModal.find('#rsdu-table-form-date').val(),
             address = jModal.find('#rsdu-table-form-address').val(),
-            consumer = jModal.find('#rsdu-table-form-consumer').val(),
+            customer = jModal.find('#rsdu-table-form-consumer').val(),
             phone = jModal.find('#rsdu-table-form-phone').val(),
             description = jModal.find('#rsdu-table-form-desc').val(),
-            stateAlias = jModal.find('#rsdu-table-form-state').attr('data-state')
+            stateId = parseInt(jModal.find('#rsdu-table-form-state').attr('data-state')),
+            stateModel = isNaN(stateId) ? null : demandStateMap.get(stateId),
+            date = new Date(dt)
 
-        let id = editingRowNum - 1,
-            rows = $('.rsdu-call-table tbody tr'),
-            cols = $(rows[id]).find('td'),
-            phoneStr = phone ? `тел: ${phone}` : '',
-            date = new Date(dt),
-            today = dateformat(new Date(), 'ddmmyyyy') === dateformat(date, 'ddmmyyyy'),
-            dateStr = today ? `Сегодня ${dateformat(date, 'HH:MM:ss')}` : dateformat(date, 'dd.mm.yyyy HH:MM:ss')
+        demandModel.timestamp = +date
+        demandModel.date = date
+        demandModel.demandAddress = address
+        demandModel.customer.name = customer
+        demandModel.demandPhone = phone
+        demandModel.description = description
+        demandModel.state = stateModel
 
-        data[id].timestamp = +date
-        data[id].address = address
-        data[id].consumer = consumer
-        data[id].phone = phone
-        data[id].description = description
-        data[id].state = stateAlias
-
-        $(cols[1]).html(dateStr)
-        $(cols[2]).html(`${address} ${consumer} ${phoneStr}`)
-        $(cols[3]).html(description)
-        $(cols[4]).html(`<span class="badge ${STATES[stateAlias].cls}">${STATES[stateAlias].text}</span>`)
+        updateTableRow(demandModel)
     })
 }
 
-function updateFormState(stateAlias){
+function updateTableRow(demandModel){
 
-    let jInput = $('#rsdu-table-form-state')
-    for(let col in STATES){
-        if(!STATES.hasOwnProperty(col)) continue
-        jInput.removeClass(STATES[col].cls)
-    }
+    let row = $(`.rsdu-call-table tbody tr[data-demand-id="${demandModel.id}"]`),
+        cols = $(row).find('td'),
+        today = dateformat(new Date(), 'ddmmyyyy') === dateformat(demandModel.date, 'ddmmyyyy'),
+        dateStr = today ? `Сегодня ${dateformat(demandModel.date, 'HH:MM:ss')}` : dateformat(demandModel.date, 'dd.mm.yyyy HH:MM:ss')
 
-    jInput.addClass(STATES[stateAlias].cls).val(STATES[stateAlias].text).attr('data-state', stateAlias)
+    $(cols[1]).html(dateStr)
+    $(cols[2]).html(getConsumerCellData(demandModel))
+    $(cols[3]).html(demandModel.description)
+    $(cols[4]).html(`<span class="badge ${demandModel.state.cls}">${demandModel.state.name}</span>`)
 }
 
-function showUpdateForm(data){
+function updateFormState(stateModel){
 
-    let now = new Date(data.timestamp),
-        date = `${dateformat(now, 'yyyy-mm-dd')}T${dateformat(now, 'HH:MM')}`,
+    let jInput = $('#rsdu-table-form-state')
+    for(let [key, sm] of demandStateMap){
+        jInput.removeClass(sm.cls)
+    }
+
+    jInput.addClass(stateModel.cls).val(stateModel.name).attr('data-state', stateModel.id)
+}
+
+function showUpdateForm(demandModel){
+
+    let date = `${dateformat(demandModel.date, 'yyyy-mm-dd')}T${dateformat(demandModel.date, 'HH:MM')}`,
         jModal = $('#rsdu-table-update-modal')
 
+    jModal.find('#rsdu-table-form-id').val(demandModel.id)
     jModal.find('#rsdu-table-form-date').val(date)
-    jModal.find('#rsdu-table-form-address').val(data.address)
-    jModal.find('#rsdu-table-form-consumer').val(data.consumer)
-    jModal.find('#rsdu-table-form-phone').val(data.phone)
-    jModal.find('#rsdu-table-form-desc').val(data.description)
-    updateFormState(data.state)
+    jModal.find('#rsdu-table-form-address').val(demandModel.demandAddress)
+    jModal.find('#rsdu-table-form-consumer').val(demandModel.customer.name)
+    jModal.find('#rsdu-table-form-phone').val(demandModel.demandPhone)
+    jModal.find('#rsdu-table-form-desc').val(demandModel.description)
+    updateFormState(demandModel.state)
 
     jModal.modal('show');
 }

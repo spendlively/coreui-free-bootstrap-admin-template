@@ -83,7 +83,7 @@
         <div class="container-fluid">
             <div class="animated fadeIn">
                 <div class="card">
-                    <div class="card-body">
+                    <div class="card-body" id="map-card-body">
                         <div id="rsdu-map-container"></div>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
 
                         <form>
                             <div class="form-group">
-                                <input type="search" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter text here...">
+                                <input type="search" class="form-control" id="rsdu-table-search" aria-describedby="emailHelp" placeholder="">
                             </div>
                         </form>
 
@@ -105,6 +105,9 @@
                                     <div class="modal-content">
                                         <div class="modal-body">
                                             <form>
+
+                                                <input type="hidden" id="rsdu-table-form-id">
+
                                                 <div class="form-group">
                                                     <label for="rsdu-table-form-date">Дата</label>
                                                     <input class="form-control" id="rsdu-table-form-date" type="datetime-local" name="date-input" placeholder="date">
@@ -135,10 +138,9 @@
                                                     <div class="dropdown" id="rsdu-table-form-state-container">
                                                         <input id="rsdu-table-form-state" data-state="green" class="form-control dropdown-toggle badge-success" type="text" placeholder="" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false" value="Направлена бригада">
                                                         <div class="dropdown-menu" aria-labelledby="" aria-expanded="false">
-                                                            <a class="dropdown-item badge-success" data-state-alias="green" href="#">Направлена бригада</a>
-                                                            <a class="dropdown-item badge-danger" data-state-alias="red" href="#">Banned</a>
-                                                            <a class="dropdown-item badge-warning" data-state-alias="yellow" href="#">Pending</a>
-                                                            <a class="dropdown-item badge-info" data-state-alias="blue" href="#">Завершено</a>
+                                                            <a class="dropdown-item badge-success" data-state-id="1" href="#">Завершено</a>
+                                                            <a class="dropdown-item badge-danger" data-state-id="2" href="#">Подтверждено</a>
+                                                            <a class="dropdown-item badge-primary" data-state-id="3" href="#">Выехала бригада</a>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -201,6 +203,5 @@
 <!--<script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@[VERSION]/dist/L.Control.Locate.min.js" charset="utf-8"></script>-->
 
 <script src="js/rsdu.build.js"></script>
-
 </body>
 </html>
