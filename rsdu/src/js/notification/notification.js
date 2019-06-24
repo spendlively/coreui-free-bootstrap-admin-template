@@ -81,6 +81,7 @@ export function addMessage(messageModel) {
     let containerId = getContainerId(messageModel.date),
         todayDate = new Date().getDate(),
         yesterdayDate = new Date(new Date().setDate(new Date().getDate() - 1)).getDate(),
+        jContainer = $(`#${containerId}`),
         headerTitle
 
     if (messageModel.date.getDate() === todayDate) {
@@ -91,12 +92,12 @@ export function addMessage(messageModel) {
         headerTitle = dateformat(messageModel.date, 'dd.mm.yyyy')
     }
 
-    if ($(`#${containerId}`).length === 0) {
+    if (jContainer.length === 0) {
         $('#rsdu-messages')
             .append($(getMessageHeaderHtml(headerTitle, containerId)))
     }
 
-    $(`#${containerId}`).append($(getMessageHtml(messageModel)))
+    jContainer.prepend($(getMessageHtml(messageModel)))
 
     addBadges(1)
 }

@@ -31,7 +31,9 @@ let containerId = 'rsdu-map-container',
     guidToLayerMap = new Map(),
     undefinedColor = '#808080',
     carsLayerGroup = null,
-    markersLayerGroup = null
+    markersLayerGroup = null,
+    // pillarRadius = 4
+    pillarRadius = 2
 
 export function getCarsLayerGroup(){
     return carsLayerGroup
@@ -133,25 +135,6 @@ export function getStates() {
 
 export function init() {
 
-    // Promise.all([
-    //     fetchStates()
-    // ]).then(args => {
-    //     Promise.all([
-    //         fetchConfig(),
-    //         fetchProviders(),
-    //         fetchLayers(),
-    //         fetchLayerGroups(),
-    //     ]).then(args => {
-    //         notification()
-    //         renderMap()
-    //         renderMapItems()
-    //         initMarkers()
-    //         initCars()
-    //         initSocketio()
-    //         getPoints()
-    //     })
-    // })
-
     Promise.all([
         fetchStates()
     ]).then(args => {
@@ -174,6 +157,25 @@ export function init() {
         })
     })
 }
+
+// function showPillars(){
+//
+//     for(let i in pillars){
+//         // pillars[i].setStyle({opacity: 1})
+//         // pillars[i].setStyle({fillOpacity: 1})
+//         // pillars[i].setStyle({visibility: 'visible'})
+//     }
+// }
+//
+// function hidePillars(){
+//
+//     for(let i in pillars){
+//         // pillars[i].setStyle({opacity: 0})
+//         // pillars[i].setStyle({fillOpacity: 0})
+//         // pillars[i].setStyle({visibility: 'hidden'})
+//         // pillars[i].setRadius(0)
+//     }
+// }
 
 function renderMap() {
 
@@ -273,14 +275,19 @@ function renderMapItems() {
                 return L.circleMarker(latlng, {
                     fillColor: 'white',
                     fillOpacity: 1,
-                    radius: 4,
+                    radius: pillarRadius,
                     weight: 1
                 })
             },
             onEachFeature: function (feature, leafletLayer) {
 
                 leafletLayer.rsduLayerModel = layerModel
+
+                //При создании фигуры она копирует статус группы
+                leafletLayer.stateAlias = layerModel.stateAlias
+
                 guidToLayerMap.set(feature.properties.guid, leafletLayer)
+
                 bindSelectingLayer(feature, leafletLayer)
                 bindPopup(feature, leafletLayer)
             }
@@ -330,7 +337,8 @@ function getPopupContent(feature, leafletLayer) {
     let popupHtml = "",
         card = getCard(),
         layerModel = leafletLayer.rsduLayerModel,
-        state = stateCollection.get(layerModel.stateAlias)
+        //ВАЖНО: отображается статус фигуры, а не группы
+        state = stateCollection.get(leafletLayer.stateAlias)
 
     if (layerModel.name) popupHtml += `<tr><td align="right"><strong>${card.get('layer')}:&nbsp;</strong></td><td class="text-nowrap">${layerModel.name}</td></tr>`
 
@@ -353,51 +361,51 @@ function bindPopup(feature, leafletLayer) {
     leafletLayer.bindPopup('', {maxWidth: config.popupMaxWidth})
 }
 
-function bindSelectingLayer(feature, layer) {
+function bindSelectingLayer(feature, leafletLayer) {
 
-    layer.on('popupopen', () => {
-        activateLayer(feature, layer)
+    leafletLayer.on('popupopen', () => {
+        activateLayer(feature, leafletLayer)
     })
 
-    layer.on('popupclose', () => {
-        deactivateLayer(feature, layer)
+    leafletLayer.on('popupclose', () => {
+        deactivateLayer(feature, leafletLayer)
     })
 }
 
-function activateLayer(feature, layer) {
+function activateLayer(feature, leafletLayer) {
 
     let state = stateCollection.get('Selected'),
         color = state.color ? '#' + state.color : '#800000'
 
-    layer.setStyle({color: color})
-    layer.bringToFront()
+    leafletLayer.setStyle({color: color})
+    leafletLayer.bringToFront()
 }
 
-function deactivateLayer(feature, layer) {
+function deactivateLayer(feature, leafletLayer) {
 
-    let state = stateCollection.get(layer.rsduLayerModel.stateAlias),
+    let state = stateCollection.get(leafletLayer.stateAlias),
         color = state.color ? '#' + state.color : undefinedColor
 
-    layer.setStyle({color: color})
+    leafletLayer.setStyle({color: color})
 }
 
 export function changeState(date) {
 
-    let layer = guidToLayerMap.get(date.guid),
+    let leafletLayer = guidToLayerMap.get(date.guid),
         state,
         color
 
-    if (!layer) return
+    if (!leafletLayer) return
 
-    state = stateCollection.get(date.state),
-        color = state.color ? '#' + state.color : undefinedColor
+    state = stateCollection.get(date.state)
+    color = state.color ? '#' + state.color : undefinedColor
 
     if (!state) return
 
-    layer.rsduLayerModel.stateAlias = state.alias
+    leafletLayer.stateAlias = state.alias
 
-    layer.setStyle({color: color})
-    layer.bringToFront()
+    leafletLayer.setStyle({color: color})
+    leafletLayer.bringToFront()
 }
 
 /**

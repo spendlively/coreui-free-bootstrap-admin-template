@@ -16,29 +16,34 @@ export function init() {
   socket = io(address)
   window.rsdu_socket = socket
 
-  socket.on('connect', () => {
+  socket.on('connect', (json) => {
+    log('connect', json)
     socket.emit('client_connected', { data: 'OMS client connected!' })
   })
 
   socket.on('state-changed', function (json) {
+    log('state-changed', json)
     json.items.forEach((data) => {
       changeState(data)
     })
   })
 
   socket.on('notify', function (json) {
+    log('notify', json)
     json.forEach((data) => {
       addMessage(new MessageModel(data))
     })
   })
 
   socket.on('marker-set', function (json) {
+    log('marker-set', json)
     json.forEach((data) => {
       addMarker(new MarkerModel(data))
     })
   })
 
   socket.on('marker-remove', function (json) {
+    log('marker-remove', json)
     json.forEach((guid) => {
       removeMarkerByGuid(guid)
     })
@@ -46,6 +51,7 @@ export function init() {
 
 
   socket.on('car-set', function (json) {
+    log('car-set', json)
     json.forEach((data) => {
       let carDescriptionModel = getCarDescriptionMap().get(data.guid)
 
@@ -59,8 +65,13 @@ export function init() {
   })
 
   socket.on('car-remove', function (json) {
+    log('car-remove', json)
     json.forEach((guid) => {
       removeCarByGuid(guid)
     })
   })
+}
+
+function log(name, json){
+  console.log('Incoming message', name, json)
 }

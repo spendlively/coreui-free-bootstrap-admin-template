@@ -59,8 +59,16 @@
     border-left: 4px solid #c8ced3;
 }
 
+.rsdu-call-table{
+    margin-bottom: 0;
+}
+
 .rsdu-call-table td{
     cursor: pointer;
+}
+
+.rsdu-table-pagination{
+    margin-top: 1rem;
 }
 
 #map-card-body{
@@ -70,4 +78,12 @@
 
 .card{
     display: none;
+}
+
+.rsdu-visible{
+    visibility: visible;
+}
+
+.rsdu-hidden{
+    visibility: hidden;
 }

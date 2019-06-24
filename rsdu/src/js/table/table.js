@@ -2,6 +2,13 @@ import dateformat from "dateformat";
 import {ajax} from "../ajax/ajax";
 import config from "../config/config";
 import {outageListUrn, outageStateListUrn} from "../ajax/urn";
+import {
+    RSDU_DEMAND_CONSUMER,
+    RSDU_DEMAND_DATE,
+    RSDU_DEMAND_DESC,
+    RSDU_DEMAND_N, RSDU_DEMAND_STATE,
+    RSDU_NEW_DEMAND
+} from '../l10n/lang/ruRu'
 import DemandStateModel from "../model/DemandStateModel";
 import DemandModel from "../model/DemandModel";
 import CustomerModel from "../model/CustomerModel";
@@ -9,25 +16,66 @@ import {RSDU_SEARCH_PLACEHOLDER} from "../l10n/l10n";
 
 let demandStateMap = new Map(),
     demandsMap = new Map(),
-    order = 'state-desc',
-    page = 1,
+    order = 'timestamp-desc',
+    pageNum = 1,
     limit = 15,
     count = 0,
-    pagesCount = 1
+    lastSearch = ''
 
 export function init(){
 
-    $('#rsdu-table-search').attr('placeholder', RSDU_SEARCH_PLACEHOLDER)
+    initSearchField()
 
     fetchStates()
         .then(args => {
-            return fetchDemands()
+            loadTable()
         })
+}
+
+function loadTable(){
+
+    fetchDemands()
         .then(args => {
-            initStateSelect()
-            initSave()
-            fetchRows()
+            renderRows()
+            initJqueryListeners()
         })
+}
+
+function initJqueryListeners(){
+    initStateSelect()
+    initSave()
+    initClickOnRow()
+    initPagination()
+    initNewDemand()
+}
+
+function initSearchField(){
+
+    let jRsduTableSearch = $('#rsdu-table-search')
+
+    jRsduTableSearch.attr('placeholder', RSDU_SEARCH_PLACEHOLDER)
+
+    jRsduTableSearch.keyup(function (event) {
+
+        let searchStr = $(this).val()
+
+        if (!searchStr) {
+            return
+        }
+
+        //Чтобы не отправлять повторно один запрос
+        //и выпадающее меню не "моргало" при нажатии на стрелочки
+        if (searchStr === lastSearch) {
+            return
+        }
+
+        search(searchStr)
+        lastSearch = searchStr
+    })
+}
+
+function search(searchStr){
+    console.log(searchStr)
 }
 
 function fetchStates() {
@@ -44,15 +92,13 @@ function fetchStates() {
 
 function fetchDemands() {
 
-    return ajax(`${config.serverUrl}${outageListUrn}?order=${order}&page=${page}&limit=${limit}`)
+    return ajax(`${config.serverUrl}${outageListUrn}?order=${order}&page=${pageNum}&limit=${limit}`)
         .then(json => {
 
             count = parseInt(json.count)
             count = isNaN(count) ? 0 : count
 
-            json.items.sort((a, b) => {
-                return a.timestamp > b.timestamp ? -1 : 1
-            }).forEach(item => {
+            json.items.forEach(item => {
 
                 item.customer = new CustomerModel(item.customer)
                 item.state = new DemandStateModel(demandStateMap.get(item.state_id))
@@ -65,7 +111,7 @@ function fetchDemands() {
         })
 }
 
-function fetchRows(){
+function renderRows(){
 
     let rows = ''
 
@@ -73,7 +119,6 @@ function fetchRows(){
 
         let today = dateformat(new Date(), 'ddmmyyyy') === dateformat(demandModel.date, 'ddmmyyyy'),
             dateStr = today ? `Сегодня ${dateformat(demandModel.date, 'HH:MM:ss')}` : dateformat(demandModel.date, 'dd.mm.yyyy HH:MM:ss')
-
 
         rows += `
             <tr data-demand-id="${demandModel.id}">
@@ -90,66 +135,115 @@ function fetchRows(){
     <table class="rsdu-call-table table table-responsive-sm table-striped table-hover table-bordered">
         <thead>
         <tr>
-            <th scope="col">№</th>
-            <th scope="col">Дата</th>
-            <th scope="col">Потребитель</th>
-            <th scope="col">Описание</th>
-            <th scope="col">Статус</th>
+            <th scope="col">${RSDU_DEMAND_N}</th>
+            <th scope="col">${RSDU_DEMAND_DATE}</th>
+            <th scope="col">${RSDU_DEMAND_CONSUMER}</th>
+            <th scope="col">${RSDU_DEMAND_DESC}</th>
+            <th scope="col">${RSDU_DEMAND_STATE}</th>
         </tr>
         </thead>
         <tbody>
         ${rows}
         </tbody>
     </table>
-    ${getPagination()}  
+    <button class="rsdu-new-demand btn btn-block btn-primary" type="button">${RSDU_NEW_DEMAND}</button>
+    ${getPagination()} 
     `
 
-    $('#rsdu-table').append($(table))
+    $('#rsdu-table').empty().append($(table))
+}
+
+function initClickOnRow(){
 
     $('.rsdu-call-table tbody tr').on('click', function(el){
 
         let id = parseInt($(this).find('td.rsdu-row-id').html())
 
-        id = isNaN(id) ? null : id
-
-        showUpdateForm(demandsMap.get(id))
+        if(!isNaN(id)){
+            showUpdateForm(demandsMap.get(id))
+        }
     })
 }
 
 function getPagination(){
 
-    let pagination = '',
-        pages = '',
-        headTail = `
-        <li class="page-item">
-            <a class="page-link" href="#"><<</a>
-        </li>
-        <li class="page-item">
-            <a class="page-link" href="#"><</a>
-        </li>
-        <li class="page-item active">
-            <a class="page-link" href="#">1</a>
-        </li>
-        <li class="page-item">
-            <a class="page-link" href="#">2</a>
-        </li>
-        <li class="page-item">
-            <a class="page-link" href="#">></a>
-        </li>
-        <li class="page-item">
-            <a class="page-link" href="#">>></a>
-        </li>
-    `
+    let lastPageNum = Math.ceil(count/limit),
+        prevPageNum = pageNum - 1,
+        nextPageNum = pageNum + 1,
+        pagesIndent = 3,
+        pagination = '',
+        head = '',
+        tail = ''
 
+    if (lastPageNum === 1) return ''
 
+    let startPageNum = pageNum - pagesIndent < 1 ? 1 : pageNum - pagesIndent,
+        endPageNum = pageNum + pagesIndent > lastPageNum ? lastPageNum : pageNum + pagesIndent
 
-    pagination = `
-        <ul class="pagination">
-            ${pages}
+    for(let n = startPageNum; n <= endPageNum; n++){
+
+        let pageNumHtml = n === pageNum ? `<strong>${n}</strong>` : n
+
+        pagination += `
+            <li class="page-item rsdu-demand-pagination" data-page-num="${n}">
+                <a class="page-link" href="#">${pageNumHtml}</a>
+            </li>
+        `
+    }
+
+    if(pageNum > 1){
+        head = `
+            <li class="page-item rsdu-demand-pagination" data-page-num="1">
+                <a class="page-link" href="#"><<</a>
+            </li>
+            <li class="page-item rsdu-demand-pagination" data-page-num="${prevPageNum}">
+                <a class="page-link" href="#"><</a>
+            </li>
+        `
+    }
+
+    if(pageNum < lastPageNum){
+        tail = `
+            <li class="page-item rsdu-demand-pagination" data-page-num="${nextPageNum}">
+                <a class="page-link" href="#">></a>
+            </li>
+            <li class="page-item rsdu-demand-pagination" data-page-num="${lastPageNum}">
+                <a class="page-link" href="#">>></a>
+            </li>
+        `
+    }
+
+    return `
+        <ul class="rsdu-table-pagination pagination">
+            ${head}
+            ${pagination}
+            ${tail}
         </ul>      
     `
+}
 
-    return pagination
+function initNewDemand(){
+
+    $('.rsdu-new-demand').click(function(e){
+        e.preventDefault()
+        showCreateForm()
+    })
+}
+
+function initPagination(){
+
+    $('.rsdu-demand-pagination').click(function(e){
+
+        e.preventDefault()
+
+        let dataPageNum = parseInt($(this).attr('data-page-num'))
+
+        if(isNaN(dataPageNum)) throw new Error("Can'n get page number")
+
+        pageNum = dataPageNum
+        demandsMap.clear()
+        loadTable()
+    })
 }
 
 function getConsumerCellData(demandModel){
@@ -213,8 +307,36 @@ function initSave(){
         demandModel.description = description
         demandModel.state = stateModel
 
-        updateTableRow(demandModel)
+        ajax(`${config.serverUrl}/rsdu/oms/api/outage/demand/update/${demandModel.id}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "customer_id": demandModel.customer.id,
+                "description": demandModel.description,
+                "state_id": demandModel.state.id
+            })
+        })
+        .then(json => {
+            console.log(json)
+            if(json.status === "Ok"){
+                updateTableRow(demandModel)
+            } else if (json.status === "Error"){
+                showErrorModal(json.message)
+            }
+        })
     })
+}
+
+function showErrorModal(message){
+
+    let modal = $('#loginErrorModal'),
+      modalBody = modal.find('.modal-body')
+
+    modalBody.html(message)
+    modal.modal('show');
+
 }
 
 function updateTableRow(demandModel){
@@ -252,6 +374,23 @@ function showUpdateForm(demandModel){
     jModal.find('#rsdu-table-form-phone').val(demandModel.demandPhone)
     jModal.find('#rsdu-table-form-desc').val(demandModel.description)
     updateFormState(demandModel.state)
+
+    jModal.modal('show');
+}
+
+function showCreateForm(){
+
+    let now = new Date(),
+        date = `${dateformat(now, 'yyyy-mm-dd')}T${dateformat(now, 'HH:MM')}`,
+      jModal = $('#rsdu-table-update-modal')
+
+    jModal.find('#rsdu-table-form-id').val('')
+    jModal.find('#rsdu-table-form-date').val(date)
+    jModal.find('#rsdu-table-form-address').val('')
+    jModal.find('#rsdu-table-form-consumer').val('')
+    jModal.find('#rsdu-table-form-phone').val('')
+    jModal.find('#rsdu-table-form-desc').val('')
+    updateFormState('')
 
     jModal.modal('show');
 }

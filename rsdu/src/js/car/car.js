@@ -63,9 +63,6 @@ export function setCar(cm){
     let carModel = carMap.get(cm.guid),
         carsLayerGroup = getCarsLayerGroup()
 
-    // //С320ОН53
-    // if(carModel && carModel.guid === '1433a0e6-8120-11e9-a5eb-0050568518fc') debugger
-
     if(carModel){
         carModel.exchange(cm)
     } else {
@@ -83,13 +80,6 @@ export function setCar(cm){
             className: iconDivCls,
             html: `<img class="${getIconClassByCrc(carModel.crc)}" src="${carModel.descriptionModel.icon}">`,
         });
-
-        // let icon = L.icon({
-        //     iconSize: [36, 36],
-        //     iconAnchor: [18, 36],
-        //     popupAnchor:  [0, -28],
-        //     iconUrl: carModel.descriptionModel.icon
-        // });
 
         carModel.leafletLayer = L.marker([carModel.lat, carModel.lng], {icon: icon}).addTo(carsLayerGroup)
     }
