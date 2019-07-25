@@ -32,7 +32,6 @@ let containerId = 'rsdu-map-container',
     undefinedColor = '#808080',
     carsLayerGroup = null,
     markersLayerGroup = null,
-    // pillarRadius = 4
     pillarRadius = 2
 
 export function getCarsLayerGroup(){
@@ -158,25 +157,6 @@ export function init() {
     })
 }
 
-// function showPillars(){
-//
-//     for(let i in pillars){
-//         // pillars[i].setStyle({opacity: 1})
-//         // pillars[i].setStyle({fillOpacity: 1})
-//         // pillars[i].setStyle({visibility: 'visible'})
-//     }
-// }
-//
-// function hidePillars(){
-//
-//     for(let i in pillars){
-//         // pillars[i].setStyle({opacity: 0})
-//         // pillars[i].setStyle({fillOpacity: 0})
-//         // pillars[i].setStyle({visibility: 'hidden'})
-//         // pillars[i].setRadius(0)
-//     }
-// }
-
 function renderMap() {
 
     let mapContainer = $('#' + containerId),
@@ -272,10 +252,11 @@ function renderMapItems() {
             },
 
             pointToLayer: function (feature, latlng) {
+
                 return L.circleMarker(latlng, {
                     fillColor: 'white',
                     fillOpacity: 1,
-                    radius: pillarRadius,
+                    radius: feature.properties.type === 'circle' && feature.properties.radius !== undefined ? feature.properties.radius : pillarRadius,
                     weight: 1
                 })
             },
@@ -378,6 +359,7 @@ function activateLayer(feature, leafletLayer) {
         color = state.color ? '#' + state.color : '#800000'
 
     leafletLayer.setStyle({color: color})
+    // leafletLayer.setStyle({color: color, fillColor: color})
     leafletLayer.bringToFront()
 }
 
@@ -387,6 +369,7 @@ function deactivateLayer(feature, leafletLayer) {
         color = state.color ? '#' + state.color : undefinedColor
 
     leafletLayer.setStyle({color: color})
+    // leafletLayer.setStyle({color: color, fillColor: 'white'})
 }
 
 export function changeState(date) {

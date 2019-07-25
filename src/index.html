@@ -106,53 +106,108 @@
                                         <div class="modal-body">
                                             <form>
 
-                                                <input type="hidden" id="rsdu-table-form-id">
+                                                <input type="hidden" id="rsdu-table-update-id">
 
                                                 <div class="form-group">
-                                                    <label for="rsdu-table-form-date">Дата</label>
-                                                    <input class="form-control" id="rsdu-table-form-date" type="datetime-local" name="date-input" placeholder="date">
+                                                    <label for="rsdu-table-update-date">Дата</label>
+                                                    <input class="form-control" id="rsdu-table-update-date" type="datetime-local" name="date-input" placeholder="">
                                                 </div>
 
                                                 <div class="form-group">
-                                                    <label for="rsdu-table-form-address">Адрес</label>
-                                                    <input type="text" class="form-control" id="rsdu-table-form-address" placeholder="Адрес">
+                                                    <div class="dropdown">
+                                                        <label for="rsdu-table-update-address">Адрес</label>
+                                                        <input autocomplete="new-password" id="rsdu-table-update-address" class="form-control dropdown-toggle" type="text" placeholder="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <div id="rsdu-table-update-address-dropdown-menu" class="dropdown-menu" aria-labelledby="rsdu-table-create-address"></div>
+                                                    </div>
                                                 </div>
 
                                                 <div class="form-group">
-                                                    <label for="rsdu-table-form-consumer">Потребитель</label>
-                                                    <input type="text" class="form-control" id="rsdu-table-form-consumer" placeholder="Потребитель">
+                                                    <div class="dropdown">
+                                                        <label for="rsdu-table-update-consumer">Потребитель</label>
+                                                        <input autocomplete="new-password" id="rsdu-table-update-consumer" class="form-control dropdown-toggle" type="text" placeholder="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <div id="rsdu-table-update-consumer-dropdown-menu" class="dropdown-menu" aria-labelledby="rsdu-table-create-consumer"></div>
+                                                    </div>
                                                 </div>
 
                                                 <div class="form-group">
-                                                    <label for="rsdu-table-form-phone">Телефон</label>
-                                                    <input type="text" class="form-control" id="rsdu-table-form-phone" placeholder="Телефон">
+                                                    <label for="rsdu-table-update-phone">Телефон</label>
+                                                    <input autocomplete="new-password" type="text" class="form-control" id="rsdu-table-update-phone" placeholder="">
                                                 </div>
 
                                                 <div class="form-group">
-                                                    <label for="rsdu-table-form-desc">Описание</label>
-                                                    <textarea class="form-control" id="rsdu-table-form-desc" rows="3"></textarea>
+                                                    <label for="rsdu-table-update-desc">Описание</label>
+                                                    <textarea autocomplete="new-password" class="form-control" id="rsdu-table-update-desc" rows="3"></textarea>
                                                 </div>
 
                                                 <div class="form-group">
                                                     <label>Статус</label>
-                                                    <div class="dropdown" id="rsdu-table-form-state-container">
-                                                        <input id="rsdu-table-form-state" data-state="green" class="form-control dropdown-toggle badge-success" type="text" placeholder="" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false" value="Направлена бригада">
-                                                        <div class="dropdown-menu" aria-labelledby="" aria-expanded="false">
-                                                            <a class="dropdown-item badge-success" data-state-id="1" href="#">Завершено</a>
-                                                            <a class="dropdown-item badge-danger" data-state-id="2" href="#">Подтверждено</a>
-                                                            <a class="dropdown-item badge-primary" data-state-id="3" href="#">Выехала бригада</a>
+                                                    <div class="dropdown" id="rsdu-table-update-state-container">
+                                                        <input autocomplete="new-password" id="rsdu-table-update-state" data-state="green" class="form-control dropdown-toggle badge-success" type="text" placeholder="" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false" value="Направлена бригада">
+                                                        <div class="dropdown-menu rsdu-demand-states" aria-labelledby="" aria-expanded="false">
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
-                                                <button type="button" class="btn btn-primary rsdu-modal-save" data-dismiss="modal">ОК</button>
+                                                <button type="button" class="btn btn-primary rsdu-table-update-submit">ОК</button>
                                             </form>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <div>
+                            <div id="rsdu-table-create-modal" class="modal" tabindex="-1" role="dialog">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-body">
+                                            <form>
+
+                                                <div class="form-group">
+                                                    <div class="dropdown">
+                                                        <label for="rsdu-table-create-address">Адрес</label>
+                                                        <input autocomplete="new-password" id="rsdu-table-create-address" class="form-control dropdown-toggle" type="text" placeholder="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <div id="rsdu-table-create-address-dropdown-menu" class="dropdown-menu" aria-labelledby="rsdu-table-create-address"></div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <div class="dropdown">
+                                                        <label for="rsdu-table-create-consumer">Потребитель</label>
+                                                        <input autocomplete="new-password" id="rsdu-table-create-consumer" class="form-control dropdown-toggle" type="text" placeholder="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <div id="rsdu-table-create-consumer-dropdown-menu" class="dropdown-menu" aria-labelledby="rsdu-table-create-consumer"></div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="rsdu-table-create-phone">Телефон</label>
+                                                    <input autocomplete="new-password" type="text" class="form-control" id="rsdu-table-create-phone" placeholder="">
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="rsdu-table-create-desc">Описание</label>
+                                                    <textarea autocomplete="new-password" class="form-control" id="rsdu-table-create-desc" rows="3"></textarea>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label>Статус</label>
+                                                    <div class="dropdown" id="rsdu-table-create-state-container">
+                                                        <input autocomplete="new-password" id="rsdu-table-create-state" data-state="green" class="form-control dropdown-toggle badge-success" type="text" placeholder="" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false" value="Направлена бригада">
+                                                        <div class="dropdown-menu rsdu-demand-states" aria-labelledby="" aria-expanded="false">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                                                <button type="button" class="btn btn-primary rsdu-table-create-submit">ОК</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -163,7 +218,6 @@
             <li class="nav-item">
                 <a class="nav-link active" data-toggle="tab" href="#timeline" role="tab">
                     <i class="icon-list"></i>
-                    <!--<span class="badge badge-pill badge-danger">1</span>-->
                 </a>
             </li>
             <li class="nav-item">

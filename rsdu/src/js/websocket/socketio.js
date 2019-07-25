@@ -31,7 +31,7 @@ export function init() {
   socket.on('notify', function (json) {
     log('notify', json)
     json.forEach((data) => {
-      addMessage(new MessageModel(data))
+      addMessage(new MessageModel(data), true)
     })
   })
 

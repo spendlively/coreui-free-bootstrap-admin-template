@@ -87,3 +87,7 @@
 .rsdu-hidden{
     visibility: hidden;
 }
+
+#rsdu-table-create-modal div.dropdown-menu{
+    width: 100%;
+}
