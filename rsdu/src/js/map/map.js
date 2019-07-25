@@ -34,11 +34,11 @@ let containerId = 'rsdu-map-container',
     markersLayerGroup = null,
     pillarRadius = 2
 
-export function getCarsLayerGroup(){
+export function getCarsLayerGroup() {
     return carsLayerGroup
 }
 
-export function getMarkersLayerGroup(){
+export function getMarkersLayerGroup() {
     return markersLayerGroup
 }
 
@@ -238,12 +238,12 @@ function renderMapItems() {
 
         layerGroup.addTo(map)
 
-        if(layerModel.alias === CARS_LAYER_ALIAS) carsLayerGroup = layerGroup
-        else if(layerModel.alias === 'MARKERS') markersLayerGroup = layerGroup
+        if (layerModel.alias === CARS_LAYER_ALIAS) carsLayerGroup = layerGroup
+        else if (layerModel.alias === 'MARKERS') markersLayerGroup = layerGroup
 
         layerGroupCollection.set(layerModel.id, layerGroup);
 
-        if(layerModel.kml === null) continue
+        if (layerModel.kml === null) continue
 
         L.geoJSON(layerModel.kml, {
 
@@ -285,7 +285,7 @@ function renderMapItems() {
     initLayerStates()
 }
 
-function initResizeListeners(){
+function initResizeListeners() {
 
     let jMapCardBody = $('#map-card-body'),
         jRsduMapContainer = $('#rsdu-map-container'),
@@ -294,7 +294,7 @@ function initResizeListeners(){
     jMapCardBody.on('mouseup', function () {
         let height = $(this).height()
 
-        if(height === oldCardHeight) return
+        if (height === oldCardHeight) return
 
         oldCardHeight = height
         jRsduMapContainer.height(height)
@@ -356,27 +356,28 @@ function bindSelectingLayer(feature, leafletLayer) {
 function activateLayer(feature, leafletLayer) {
 
     let state = stateCollection.get('Selected'),
-        color = state.color ? '#' + state.color : '#800000'
+        color = state.color ? '#' + state.color : '#800000',
+        fillColor = state.fillColor ? `#${state.fillColor}` : '#800000'
 
-    leafletLayer.setStyle({color: color})
-    // leafletLayer.setStyle({color: color, fillColor: color})
+    leafletLayer.setStyle({color: color, fillColor: fillColor})
     leafletLayer.bringToFront()
 }
 
 function deactivateLayer(feature, leafletLayer) {
 
     let state = stateCollection.get(leafletLayer.stateAlias),
-        color = state.color ? '#' + state.color : undefinedColor
+        color = state.color ? '#' + state.color : undefinedColor,
+        fillColor = state.fillColor ? `#${state.fillColor}` : 'white'
 
-    leafletLayer.setStyle({color: color})
-    // leafletLayer.setStyle({color: color, fillColor: 'white'})
+    leafletLayer.setStyle({color: color, fillColor: fillColor})
 }
 
 export function changeState(date) {
 
     let leafletLayer = guidToLayerMap.get(date.guid),
         state,
-        color
+        color,
+        fillColor = 'white'
 
     if (!leafletLayer) return
 
@@ -384,18 +385,18 @@ export function changeState(date) {
     color = state.color ? '#' + state.color : undefinedColor
 
     if (!state) return
+    if (state.fillColor) fillColor = `#${state.fillColor}`
 
     leafletLayer.stateAlias = state.alias
 
-    leafletLayer.setStyle({color: color})
+    leafletLayer.setStyle({color: color, fillColor: fillColor})
     leafletLayer.bringToFront()
 }
 
 /**
  * Для генерации координат
  */
-function getPoints()
-{
+function getPoints() {
     //http://192.168.8.74/?getpoints=4&addfirst=1
     let url_string = window.location.href,
         url = new URL(url_string),
@@ -406,18 +407,18 @@ function getPoints()
         buffer = '',
         coords = ''
 
-    if(isNaN(count)) return
+    if (isNaN(count)) return
 
     let map = getMap()
     map.on('mouseup', (e) => {
 
         coords = `${e.latlng.lng},${e.latlng.lat},0 `
         buffer += coords
-        if(increment === 1) first = coords
+        if (increment === 1) first = coords
 
-        if(increment === count){
+        if (increment === count) {
 
-            if(addfirst === 1) buffer += first
+            if (addfirst === 1) buffer += first
 
             console.log(buffer)
             prompt('Coordinates', buffer)
