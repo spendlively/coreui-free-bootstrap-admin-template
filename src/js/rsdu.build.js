@@ -1058,7 +1058,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) *
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return StateModel; });\nclass StateModel {\n\n    constructor(options) {\n\n        this.alias = options.alias || null\n        this.color = options.color || 'black'\n        this.id = parseInt(options.id) || 0\n        this.name = options.name || ''\n    }\n}\n\n\n//# sourceURL=webpack:///./rsdu/src/js/model/StateModel.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"default\", function() { return StateModel; });\nclass StateModel {\n\n    constructor(options) {\n\n        this.alias = options.alias || null\n        this.color = options.color || 'black'\n        this.id = parseInt(options.id) || 0\n        this.name = options.name || ''\n        this.fillColor = options.fill_color || null\n    }\n}\n\n\n//# sourceURL=webpack:///./rsdu/src/js/model/StateModel.js?");
 
 /***/ }),
 
